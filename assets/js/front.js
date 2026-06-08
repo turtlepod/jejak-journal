@@ -537,7 +537,7 @@
 				currentTodos.push({
 					text: t.text,
 					done: false,
-					imported: true,
+					imported: false,
 				});
 			});
 
