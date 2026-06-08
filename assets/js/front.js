@@ -265,6 +265,10 @@
 		items.forEach(function (item, index) {
 			highlightsList.appendChild(createHighlightItem(item, index));
 		});
+		// Auto-resize after render
+		highlightsList.querySelectorAll('.jejak-highlight-text').forEach(function (ta) {
+			requestAnimationFrame(function () { autoResizeTextarea(ta); });
+		});
 	}
 
 	function createHighlightItem(item, index) {
@@ -277,7 +281,7 @@
 			'<button type="button" class="jejak-icon-picker-btn" data-action="pick-icon" data-icon-key="' + iconKey + '" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
 				emoji +
 			'</button>' +
-			'<input type="text" class="jejak-highlight-text" value="' + escapeHtml(item.text || '') + '" placeholder="What happened?">' +
+			'<textarea class="jejak-highlight-text" rows="1" placeholder="What happened?">' + escapeHtml(item.text || '') + '</textarea>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
 		return div;
 	}
@@ -310,6 +314,7 @@
 
 		highlightsList.addEventListener('input', function (e) {
 			if (e.target.classList.contains('jejak-highlight-text')) {
+				autoResizeTextarea(e.target);
 				saveHighlightsDebounced();
 			}
 		});
@@ -337,7 +342,9 @@
 			var newItem = { icon_key: defaultIconKey, text: '' };
 			var item = createHighlightItem(newItem, highlightsList.children.length);
 			highlightsList.appendChild(item);
-			item.querySelector('.jejak-highlight-text').focus();
+			var ta = item.querySelector('.jejak-highlight-text');
+			ta.focus();
+			requestAnimationFrame(function () { autoResizeTextarea(ta); });
 			saveHighlights();
 		});
 	}
@@ -408,6 +415,10 @@
 		items.forEach(function (item, index) {
 			todosList.appendChild(createTodoItem(item, index));
 		});
+		// Auto-resize after render
+		todosList.querySelectorAll('.jejak-todo-text').forEach(function (ta) {
+			requestAnimationFrame(function () { autoResizeTextarea(ta); });
+		});
 	}
 
 	function createTodoItem(item, index) {
@@ -416,11 +427,12 @@
 		div.dataset.index = index;
 		var checked = item.done ? ' checked' : '';
 		var disabled = item.imported ? ' disabled' : '';
+		var readonly = item.imported ? ' readonly' : '';
 		div.innerHTML =
 			'<div class="jejak-todo-row">' +
 				'<span class="jejak-todo-custom-check" data-action="toggle-todo"></span>' +
 				'<input type="checkbox" class="jejak-todo-checkbox"' + checked + disabled + '>' +
-				'<span class="jejak-todo-text" contenteditable="' + (item.imported ? 'false' : 'true') + '">' + escapeHtml(item.text || '') + '</span>' +
+				'<textarea class="jejak-todo-text" rows="1"' + readonly + '>' + escapeHtml(item.text || '') + '</textarea>' +
 			'</div>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
 		return div;
@@ -431,7 +443,7 @@
 		var items = todosList.querySelectorAll('.jejak-todo-item');
 		return Array.prototype.map.call(items, function (el) {
 			return {
-				text: el.querySelector('.jejak-todo-text').textContent.trim(),
+				text: el.querySelector('.jejak-todo-text').value.trim(),
 				done: el.querySelector('.jejak-todo-checkbox').checked,
 				imported: el.classList.contains('is-imported'),
 			};
@@ -462,6 +474,7 @@
 
 		todosList.addEventListener('input', function (e) {
 			if (e.target.classList.contains('jejak-todo-text')) {
+				autoResizeTextarea(e.target);
 				saveTodosDebounced();
 			}
 		});
@@ -556,7 +569,9 @@
 			var newItem = { text: '', done: false, imported: false };
 			var item = createTodoItem(newItem, todosList.children.length);
 			todosList.appendChild(item);
-			item.querySelector('.jejak-todo-text').focus();
+			var ta = item.querySelector('.jejak-todo-text');
+			ta.focus();
+			requestAnimationFrame(function () { autoResizeTextarea(ta); });
 			saveTodos();
 		});
 	}
@@ -586,7 +601,7 @@
 		// Auto-resize after render — defer to next frame for accurate scrollHeight
 		journalTbody.querySelectorAll('.jejak-note-textarea').forEach(function (ta) {
 			requestAnimationFrame(function () {
-				autoResize(ta);
+				autoResizeTextarea(ta);
 			});
 		});
 	}
@@ -607,7 +622,7 @@
 		});
 	}
 
-	function autoResize(textarea) {
+	function autoResizeTextarea(textarea) {
 		// Reset to get true scrollHeight
 		textarea.style.height = 'auto';
 		var h = Math.max(textarea.scrollHeight, 60);
@@ -617,7 +632,7 @@
 	if (journalTbody) {
 		journalTbody.addEventListener('input', function (e) {
 			if (e.target.classList.contains('jejak-note-textarea')) {
-				autoResize(e.target);
+				autoResizeTextarea(e.target);
 				saveNotesDebounced();
 			}
 		});
