@@ -81,9 +81,82 @@
 		}, 2000);
 	}
 
+	// ── Overlay / Dialog Helper ──────────────────────
+	function createOverlay(innerHtml, focusSelector) {
+		var exist = document.getElementById('jejak-overlay');
+		if (exist) exist.remove();
+
+		var overlay = document.createElement('div');
+		overlay.id = 'jejak-overlay';
+		overlay.className = 'jejak-overlay';
+		overlay.innerHTML = innerHtml;
+		document.body.appendChild(overlay);
+
+		if (focusSelector) {
+			setTimeout(function () {
+				var el = overlay.querySelector(focusSelector);
+				if (el) el.focus();
+			}, 50);
+		}
+
+		return overlay;
+	}
+
+	function closeOverlay() {
+		var overlay = document.getElementById('jejak-overlay');
+		if (overlay) overlay.remove();
+	}
+
+	// ── Confirm Delete Modal ─────────────────────────
+	function confirmDelete(itemEl, onConfirm) {
+		var html =
+			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
+			'<div class="jejak-dialog">' +
+				'<p class="jejak-dialog-text">' + (data.i18n.delete_confirm || 'Delete this item?') + '</p>' +
+				'<div class="jejak-dialog-actions">' +
+					'<button type="button" class="jejak-btn jejak-btn-outline" data-action="dismiss-overlay">' + (data.i18n.cancel || 'Cancel') + '</button>' +
+					'<button type="button" class="jejak-btn jejak-btn-danger" data-action="confirm-delete">' + (data.i18n.delete || 'Delete') + '</button>' +
+				'</div>' +
+			'</div>';
+		var overlay = createOverlay(html, '[data-action="dismiss-overlay"]');
+
+		overlay.addEventListener('click', function (e) {
+			var btn = e.target.closest('button');
+			var action = btn ? btn.dataset.action : null;
+			if (action === 'confirm-delete') {
+				closeOverlay();
+				onConfirm();
+			} else if (action === 'dismiss-overlay' || e.target.classList.contains('jejak-overlay-backdrop')) {
+				closeOverlay();
+			}
+		});
+	}
+
+	// ── Notice Modal ─────────────────────────────────
+	function showNotice(message) {
+		var html =
+			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
+			'<div class="jejak-dialog">' +
+				'<p class="jejak-dialog-text">' + message + '</p>' +
+				'<div class="jejak-dialog-actions">' +
+					'<button type="button" class="jejak-btn jejak-btn-primary" data-action="dismiss-overlay">' + (data.i18n.ok || 'OK') + '</button>' +
+				'</div>' +
+			'</div>';
+		var overlay = createOverlay(html, '[data-action="dismiss-overlay"]');
+
+		overlay.addEventListener('click', function (e) {
+			var btn = e.target.closest('button');
+			var action = btn ? btn.dataset.action : null;
+			if (action === 'dismiss-overlay' || e.target.classList.contains('jejak-overlay-backdrop')) {
+				closeOverlay();
+			}
+		});
+	}
+
 	// ── URL Navigation ───────────────────────────────
 	function getMonthSlug(year, month) {
-		return 'jj-' + monthNames[month - 1].toLowerCase() + '-' + year;
+		var m = month < 10 ? '0' + month : '' + month;
+		return year + '.' + m;
 	}
 
 	function updateURL(year, month) {
@@ -96,15 +169,9 @@
 	function getURLMonth() {
 		var url = new URL(window.location.href);
 		var param = url.searchParams.get('jejak');
-		if (param && /^jj-[a-z]+-\d{4}$/.test(param)) {
-			var parts = param.split('-');
-			var monthName = parts[1]; // e.g. "june"
-			var year = parseInt(parts[2], 10);
-			for (var i = 0; i < monthNames.length; i++) {
-				if (monthNames[i].toLowerCase() === monthName) {
-					return { year: year, month: i + 1 };
-				}
-			}
+		if (param && /^\d{4}\.\d{2}$/.test(param)) {
+			var parts = param.split('.');
+			return { year: parseInt(parts[0], 10), month: parseInt(parts[1], 10) };
 		}
 		return null;
 	}
@@ -232,7 +299,7 @@
 			showSections();
 			updateImportButton();
 		}).catch(function () {
-			alert(data.i18n.error || 'Could not create entry.');
+			showNotice(data.i18n.error || 'Could not create entry.');
 		});
 	});
 
@@ -266,9 +333,7 @@
 			highlightsList.appendChild(createHighlightItem(item, index));
 		});
 		// Auto-resize after render
-		highlightsList.querySelectorAll('.jejak-highlight-text').forEach(function (ta) {
-			requestAnimationFrame(function () { autoResizeTextarea(ta); });
-		});
+		resizeAll(highlightsList, '.jejak-highlight-text');
 	}
 
 	function createHighlightItem(item, index) {
@@ -305,8 +370,10 @@
 			var item = btn.closest('.jejak-highlight-item');
 
 			if (action === 'remove') {
-				item.remove();
-				saveHighlights();
+				confirmDelete(item, function () {
+					item.remove();
+					saveHighlights();
+				});
 			} else if (action === 'pick-icon') {
 				openIconPicker(btn);
 			}
@@ -320,11 +387,7 @@
 		});
 	}
 
-	var highlightsSaveTimer;
-	function saveHighlightsDebounced() {
-		clearTimeout(highlightsSaveTimer);
-		highlightsSaveTimer = setTimeout(saveHighlights, 800);
-	}
+	var saveHighlightsDebounced = debounce(saveHighlights, 800);
 
 	function saveHighlights() {
 		if (!currentEntry) return;
@@ -351,56 +414,44 @@
 
 	// ── Icon Picker Modal ────────────────────────────
 	function openIconPicker(triggerBtn) {
-		var existing = document.getElementById('jejak-icon-modal');
-		if (existing) existing.remove();
-
 		var icons = data.icons || {};
 		var iconHtml = '';
 		Object.keys(icons).forEach(function (key) {
 			iconHtml += '<button type="button" class="jejak-icon-option" data-icon-key="' + key + '">' + icons[key] + '</button>';
 		});
 
-		var modal = document.createElement('div');
-		modal.id = 'jejak-icon-modal';
-		modal.className = 'jejak-icon-modal';
-		modal.innerHTML =
-			'<div class="jejak-icon-modal-backdrop" data-action="close-modal"></div>' +
-			'<div class="jejak-icon-modal-content">' +
+		var html =
+			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
+			'<div class="jejak-dialog jejak-icon-picker-dialog">' +
 				'<h3>' + (data.i18n.select_icon || 'Select icon') + '</h3>' +
 				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="' + (data.i18n.search_icon || 'Search icons...') + '">' +
 				'<div class="jejak-icon-grid">' + iconHtml + '</div>' +
-				'<button type="button" class="jejak-btn jejak-modal-close" data-action="close-modal">\u00D7</button>' +
+				'<button type="button" class="jejak-btn jejak-modal-close" data-action="dismiss-overlay">\u00D7</button>' +
 			'</div>';
+		var overlay = createOverlay(html, '#jejak-icon-search');
 
-		document.body.appendChild(modal);
-
-		setTimeout(function () {
-			var searchEl = document.getElementById('jejak-icon-search');
-			if (searchEl) searchEl.focus();
-		}, 50);
-
-		modal.querySelector('.jejak-icon-grid').addEventListener('click', function (e) {
+		overlay.querySelector('.jejak-icon-grid').addEventListener('click', function (e) {
 			var iconBtn = e.target.closest('.jejak-icon-option');
 			if (!iconBtn) return;
 			var key = iconBtn.dataset.iconKey;
 			var emoji = getEmoji(key);
 			triggerBtn.textContent = emoji;
 			triggerBtn.dataset.iconKey = key;
-			modal.remove();
+			closeOverlay();
 			saveHighlights();
 		});
 
-		modal.addEventListener('click', function (e) {
-			if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('jejak-icon-modal-backdrop')) {
-				modal.remove();
+		overlay.addEventListener('click', function (e) {
+			if (e.target.dataset.action === 'dismiss-overlay' || e.target.classList.contains('jejak-overlay-backdrop')) {
+				closeOverlay();
 			}
 		});
 
-		var searchEl = modal.querySelector('#jejak-icon-search');
+		var searchEl = overlay.querySelector('#jejak-icon-search');
 		if (searchEl) {
 			searchEl.addEventListener('input', function () {
 				var query = this.value.toLowerCase();
-				modal.querySelectorAll('.jejak-icon-option').forEach(function (btn) {
+				overlay.querySelectorAll('.jejak-icon-option').forEach(function (btn) {
 					var key = btn.dataset.iconKey || '';
 					btn.style.display = key.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
 				});
@@ -416,9 +467,7 @@
 			todosList.appendChild(createTodoItem(item, index));
 		});
 		// Auto-resize after render
-		todosList.querySelectorAll('.jejak-todo-text').forEach(function (ta) {
-			requestAnimationFrame(function () { autoResizeTextarea(ta); });
-		});
+		resizeAll(todosList, '.jejak-todo-text');
 	}
 
 	function createTodoItem(item, index) {
@@ -467,8 +516,11 @@
 			// Remove button
 			var btn = e.target.closest('button');
 			if (btn && btn.dataset.action === 'remove') {
-				btn.closest('.jejak-todo-item').remove();
-				saveTodos();
+				var todoItem = btn.closest('.jejak-todo-item');
+				confirmDelete(todoItem, function () {
+					todoItem.remove();
+					saveTodos();
+				});
 			}
 		});
 
@@ -480,11 +532,7 @@
 		});
 	}
 
-	var todosSaveTimer;
-	function saveTodosDebounced() {
-		clearTimeout(todosSaveTimer);
-		todosSaveTimer = setTimeout(saveTodos, 800);
-	}
+	var saveTodosDebounced = debounce(saveTodos, 800);
 
 	function saveTodos() {
 		if (!currentEntry) return;
@@ -522,7 +570,7 @@
 			});
 
 			if (toImport.length === 0) {
-				alert('No unchecked items to import from ' + monthNames[prevMonth - 1] + ' ' + prevYear + '.');
+				showNotice('No unchecked items to import from ' + monthNames[prevMonth - 1] + ' ' + prevYear + '.');
 				return;
 			}
 
@@ -557,10 +605,10 @@
 					showSaved();
 				});
 			}).catch(function () {
-				alert('Failed to import todos.');
+				showNotice('Failed to import todos.');
 			});
 		}).catch(function () {
-			alert('No previous month entry found.');
+			showNotice('No previous month entry found.');
 		});
 	});
 
@@ -582,33 +630,30 @@
 		journalTbody.innerHTML = '';
 		if (!notes || !notes.length) return;
 		notes.forEach(function (note, index) {
-			var tr = document.createElement('tr');
-			tr.className = 'jejak-journal-row';
-			tr.dataset.index = index;
+			var row = document.createElement('div');
+			row.className = 'jejak-field-row jejak-journal-item';
+			row.dataset.index = index;
 			var dayName = note.day_name || '';
 			var dayNameShort = dayName.substring(0, 3);
 			if (dayNameShort === 'Sat' || dayNameShort === 'Sun') {
-				tr.classList.add('is-weekend');
+				row.classList.add('is-weekend');
 			}
-			tr.innerHTML =
-				'<td class="jejak-col-day">' + note.day + ' <span class="jejak-day-name">' + dayNameShort + '</span></td>' +
-				'<td class="jejak-col-notes">' +
-					'<textarea class="jejak-note-textarea" rows="3" data-index="' + index + '">' + escapeHtml(note.notes || '') + '</textarea>' +
-				'</td>';
-			journalTbody.appendChild(tr);
+			row.innerHTML =
+				'<div class="jejak-field-control jejak-day-icon" title="' + note.day + '">' +
+					'<span class="jejak-day-header">' + dayNameShort + '</span>' +
+					'<span class="jejak-day-number">' + note.day + '</span>' +
+				'</div>' +
+				'<textarea class="jejak-field-textarea jejak-note-textarea" rows="1" placeholder="Notes…" data-index="' + index + '">' + escapeHtml(note.notes || '') + '</textarea>';
+			journalTbody.appendChild(row);
 		});
 
-		// Auto-resize after render — defer to next frame for accurate scrollHeight
-		journalTbody.querySelectorAll('.jejak-note-textarea').forEach(function (ta) {
-			requestAnimationFrame(function () {
-				autoResizeTextarea(ta);
-			});
-		});
+		// Auto-resize after render
+		resizeAll(journalTbody, '.jejak-note-textarea');
 	}
 
 	function getNotesFromDOM() {
 		if (!journalTbody) return [];
-		var rows = journalTbody.querySelectorAll('.jejak-journal-row');
+		var rows = journalTbody.querySelectorAll('.jejak-journal-item');
 		return Array.prototype.map.call(rows, function (row, idx) {
 			var ta = row.querySelector('.jejak-note-textarea');
 			return {
@@ -638,11 +683,7 @@
 		});
 	}
 
-	var notesSaveTimer;
-	function saveNotesDebounced() {
-		clearTimeout(notesSaveTimer);
-		notesSaveTimer = setTimeout(saveNotes, 1000);
-	}
+	var saveNotesDebounced = debounce(saveNotes, 1000);
 
 	function saveNotes() {
 		if (!currentEntry) return;
@@ -660,6 +701,20 @@
 		var div = document.createElement('div');
 		div.textContent = str;
 		return div.innerHTML;
+	}
+
+	function debounce(fn, delay) {
+		var timer;
+		return function () {
+			clearTimeout(timer);
+			timer = setTimeout(fn, delay);
+		};
+	}
+
+	function resizeAll(container, selector) {
+		container.querySelectorAll(selector).forEach(function (ta) {
+			requestAnimationFrame(function () { autoResizeTextarea(ta); });
+		});
 	}
 
 	// ── Init ─────────────────────────────────────────

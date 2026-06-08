@@ -125,18 +125,7 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 		<!-- Journal Section -->
 		<section class="jejak-section jejak-journal-notes" id="jejak-journal-section">
 			<h2 class="jejak-section-title"><?php esc_html_e( 'Journal', 'jejak-journal' ); ?></h2>
-			<div class="jejak-journal-table-wrap">
-				<table class="jejak-journal-table" id="jejak-journal-table">
-					<thead>
-						<tr>
-							<th class="jejak-col-day"><?php esc_html_e( 'Day', 'jejak-journal' ); ?></th>
-							<th class="jejak-col-notes"><?php esc_html_e( 'Notes', 'jejak-journal' ); ?></th>
-						</tr>
-					</thead>
-					<tbody id="jejak-journal-tbody">
-					</tbody>
-				</table>
-			</div>
+			<div class="jejak-journal-list" id="jejak-journal-tbody"></div>
 		</section>
 		<?php endif; ?>
 	</div>

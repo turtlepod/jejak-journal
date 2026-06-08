@@ -23,14 +23,12 @@ add_action( 'admin_post_jejak_import', __NAMESPACE__ . '\\handle_import' );
  * Register admin menu.
  */
 function admin_register_menu() {
-	add_menu_page(
+	add_options_page(
 		__( 'Jejak Journal', 'jejak-journal' ),
 		__( 'Jejak Journal', 'jejak-journal' ),
 		ADMIN_CAPABILITY,
 		ADMIN_SLUG,
-		__NAMESPACE__ . '\\admin_page_settings',
-		'dashicons-book-alt',
-		35
+		__NAMESPACE__ . '\\admin_page_settings'
 	);
 }
 
