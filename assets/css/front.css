@@ -539,6 +539,7 @@ a.jejak-login-btn:focus-visible {
 	overflow: hidden;
 	background: #e8e8e8;
 	border-color: #bbb;
+	cursor: default;
 }
 
 .jejak-day-header {
