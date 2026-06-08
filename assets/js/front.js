@@ -583,9 +583,11 @@
 			journalTbody.appendChild(tr);
 		});
 
-		// Auto-resize after render
+		// Auto-resize after render — defer to next frame for accurate scrollHeight
 		journalTbody.querySelectorAll('.jejak-note-textarea').forEach(function (ta) {
-			autoResize(ta);
+			requestAnimationFrame(function () {
+				autoResize(ta);
+			});
 		});
 	}
 
