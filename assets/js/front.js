@@ -430,8 +430,8 @@
 		var readonly = item.imported ? ' readonly' : '';
 		div.innerHTML =
 			'<div class="jejak-todo-row">' +
-				'<span class="jejak-todo-custom-check" data-action="toggle-todo"></span>' +
 				'<input type="checkbox" class="jejak-todo-checkbox"' + checked + disabled + '>' +
+				'<span class="jejak-todo-custom-check" data-action="toggle-todo"></span>' +
 				'<textarea class="jejak-todo-text" rows="1"' + readonly + '>' + escapeHtml(item.text || '') + '</textarea>' +
 			'</div>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';

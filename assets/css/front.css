@@ -460,11 +460,6 @@
 	border-color: #2271b1;
 }
 
-.jejak-todo-checkbox:checked ~ .jejak-todo-text {
-	text-decoration: line-through;
-	color: #999;
-}
-
 /* ── Journal Table ─────────────────────────────── */
 .jejak-journal-table-wrap {
 	overflow-x: auto;
