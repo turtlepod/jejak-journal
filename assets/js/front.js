@@ -275,13 +275,13 @@
 		var iconKey = item.icon_key || defaultIconKey;
 		var emoji = getEmoji(iconKey);
 		var div = document.createElement('div');
-		div.className = 'jejak-highlight-item';
+		div.className = 'jejak-field-row jejak-highlight-item';
 		div.dataset.index = index;
 		div.innerHTML =
-			'<button type="button" class="jejak-icon-picker-btn" data-action="pick-icon" data-icon-key="' + iconKey + '" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
+			'<button type="button" class="jejak-field-control jejak-icon-picker-btn" data-action="pick-icon" data-icon-key="' + iconKey + '" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
 				emoji +
 			'</button>' +
-			'<textarea class="jejak-highlight-text" rows="1" placeholder="What happened?">' + escapeHtml(item.text || '') + '</textarea>' +
+			'<textarea class="jejak-field-textarea jejak-highlight-text" rows="1" placeholder="What happened?">' + escapeHtml(item.text || '') + '</textarea>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
 		return div;
 	}
@@ -423,7 +423,7 @@
 
 	function createTodoItem(item, index) {
 		var div = document.createElement('div');
-		div.className = 'jejak-todo-item' + (item.imported ? ' is-imported' : '');
+		div.className = 'jejak-field-row jejak-todo-item' + (item.imported ? ' is-imported' : '');
 		div.dataset.index = index;
 		var checked = item.done ? ' checked' : '';
 		var disabled = item.imported ? ' disabled' : '';
@@ -431,8 +431,8 @@
 		div.innerHTML =
 			'<div class="jejak-todo-row">' +
 				'<input type="checkbox" class="jejak-todo-checkbox"' + checked + disabled + '>' +
-				'<span class="jejak-todo-custom-check" data-action="toggle-todo"></span>' +
-				'<textarea class="jejak-todo-text" rows="1"' + readonly + '>' + escapeHtml(item.text || '') + '</textarea>' +
+				'<span class="jejak-field-control jejak-todo-custom-check" data-action="toggle-todo"></span>' +
+				'<textarea class="jejak-field-textarea jejak-todo-text" rows="1"' + readonly + '>' + escapeHtml(item.text || '') + '</textarea>' +
 			'</div>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
 		return div;

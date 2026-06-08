@@ -259,8 +259,8 @@
 	color: #999;
 }
 
-/* ── Highlights ────────────────────────────────── */
-.jejak-highlight-item {
+/* ── Shared Field Components ────────────────────── */
+.jejak-field-row {
 	display: flex;
 	align-items: flex-start;
 	gap: 10px;
@@ -268,26 +268,25 @@
 	border-bottom: 1px solid #f5f5f5;
 }
 
-.jejak-icon-picker-btn {
+.jejak-field-control {
+	width: 40px;
+	height: 40px;
 	background: #f0f0f0;
 	border: 1px solid #ddd;
 	border-radius: 8px;
-	width: 40px;
-	height: 40px;
-	font-size: 20px;
-	cursor: pointer;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: background 0.2s;
+	cursor: pointer;
+	transition: background 0.2s, border-color 0.2s;
 	flex-shrink: 0;
 }
 
-.jejak-icon-picker-btn:hover {
+.jejak-field-control:hover {
 	background: #e8e8e8;
 }
 
-.jejak-highlight-text {
+.jejak-field-textarea {
 	flex: 1;
 	padding: 8px 12px;
 	border: 1px solid #ddd;
@@ -297,13 +296,26 @@
 	line-height: 1.5;
 	resize: none;
 	min-height: 40px;
+	outline: none;
 	transition: border-color 0.2s;
+	background: transparent;
 }
 
-.jejak-highlight-text:focus {
-	outline: none;
+.jejak-field-textarea:focus {
 	border-color: #2271b1;
 	box-shadow: 0 0 0 2px rgb(34 113 177 / 20%);
+}
+
+/* ── Highlights ────────────────────────────────── */
+
+/* .jejak-highlight-item  — extends jejak-field-row */
+
+/* .jejak-icon-picker-btn — extends jejak-field-control */
+
+/* .jejak-highlight-text  — extends jejak-field-textarea */
+
+.jejak-icon-picker-btn {
+	font-size: 20px;
 }
 
 /* ── Icon Picker Modal ─────────────────────────── */
@@ -391,13 +403,12 @@
 }
 
 /* ── ToDos ─────────────────────────────────────── */
-.jejak-todo-item {
-	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-	padding: 10px 0;
-	border-bottom: 1px solid #f5f5f5;
-}
+
+/* .jejak-todo-item       — extends jejak-field-row */
+
+/* .jejak-todo-custom-check — extends jejak-field-control */
+
+/* .jejak-todo-text       — extends jejak-field-textarea */
 
 .jejak-todo-row {
 	display: flex;
@@ -413,24 +424,6 @@
 	height: 0;
 }
 
-.jejak-todo-custom-check {
-	width: 40px;
-	height: 40px;
-	background: #f0f0f0;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.2s;
-	flex-shrink: 0;
-	cursor: pointer;
-}
-
-.jejak-todo-custom-check:hover {
-	background: #e8e8e8;
-}
-
 .jejak-todo-checkbox:checked + .jejak-todo-custom-check {
 	background: #2271b1;
 	border-color: #2271b1;
@@ -444,26 +437,6 @@
 	border-width: 0 2px 2px 0;
 	transform: rotate(45deg);
 	margin-top: -2px;
-}
-
-.jejak-todo-text {
-	flex: 1;
-	padding: 6px 10px;
-	border: 1px solid #ddd;
-	border-radius: 6px;
-	font-size: 14px;
-	font-family: inherit;
-	line-height: 1.5;
-	resize: none;
-	min-height: 40px;
-	outline: none;
-	transition: border-color 0.2s;
-	background: transparent;
-}
-
-.jejak-todo-text:focus {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgb(34 113 177 / 20%);
 }
 
 /* ── Journal Table ─────────────────────────────── */
