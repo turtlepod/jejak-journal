@@ -63,11 +63,10 @@ class DB {
 	 */
 	public static function get_entry( $user_id, $year, $month ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'jejak_journal_entries';
 
 		$entry = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE user_id = %d AND year = %d AND month = %d",
+				"SELECT * FROM {$wpdb->prefix}jejak_journal_entries WHERE user_id = %d AND year = %d AND month = %d",
 				$user_id,
 				$year,
 				$month
@@ -76,8 +75,8 @@ class DB {
 		);
 
 		if ( $entry ) {
-			$entry['highlights']   = $entry['highlights'] ? json_decode( $entry['highlights'], true ) : array();
-			$entry['todos']        = $entry['todos'] ? json_decode( $entry['todos'], true ) : array();
+			$entry['highlights']    = $entry['highlights'] ? json_decode( $entry['highlights'], true ) : array();
+			$entry['todos']         = $entry['todos'] ? json_decode( $entry['todos'], true ) : array();
 			$entry['journal_notes'] = $entry['journal_notes'] ? json_decode( $entry['journal_notes'], true ) : self::generate_empty_journal( (int) $month, (int) $year );
 			return $entry;
 		}
@@ -97,9 +96,9 @@ class DB {
 		global $wpdb;
 		$table = $wpdb->prefix . 'jejak_journal_entries';
 
-		$month_name  = gmdate( 'F', mktime( 0, 0, 0, $month, 1, 2000 ) );
-		$slug        = 'jj-' . strtolower( $month_name ) . '-' . $year;
-		$journal     = self::generate_empty_journal( $month, $year );
+		$month_name = gmdate( 'F', mktime( 0, 0, 0, $month, 1, 2000 ) );
+		$slug       = 'jj-' . strtolower( $month_name ) . '-' . $year;
+		$journal    = self::generate_empty_journal( $month, $year );
 
 		$result = $wpdb->insert(
 			$table,
@@ -191,14 +190,14 @@ class DB {
 		$journal       = array();
 
 		for ( $day = 1; $day <= $days_in_month; $day++ ) {
-			$timestamp   = mktime( 0, 0, 0, $month, $day, $year );
-			$day_name    = gmdate( 'D', $timestamp );
-			$date_str    = gmdate( 'Y-m-d', $timestamp );
-			$journal[]   = array(
-				'day'   => $day,
-				'date'  => $date_str,
+			$timestamp = mktime( 0, 0, 0, $month, $day, $year );
+			$day_name  = gmdate( 'D', $timestamp );
+			$date_str  = gmdate( 'Y-m-d', $timestamp );
+			$journal[] = array(
+				'day'      => $day,
+				'date'     => $date_str,
 				'day_name' => $day_name,
-				'notes' => '',
+				'notes'    => '',
 			);
 		}
 
@@ -216,6 +215,82 @@ class DB {
 			$roles = array( 'administrator' );
 		}
 		return $roles;
+	}
+
+	/**
+	 * Get all entries for a user.
+	 *
+	 * @param int $user_id User ID.
+	 * @return array
+	 */
+	public static function get_all_entries( $user_id ) {
+		global $wpdb;
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}jejak_journal_entries WHERE user_id = %d ORDER BY year ASC, month ASC",
+				$user_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! $rows ) {
+			return array();
+		}
+
+		foreach ( $rows as &$row ) {
+			$row['highlights']    = $row['highlights'] ? json_decode( $row['highlights'], true ) : array();
+			$row['todos']         = $row['todos'] ? json_decode( $row['todos'], true ) : array();
+			$row['journal_notes'] = $row['journal_notes'] ? json_decode( $row['journal_notes'], true ) : array();
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Upsert an entry (create or update).
+	 *
+	 * @param int   $user_id User ID.
+	 * @param int   $year    Year.
+	 * @param int   $month   Month.
+	 * @param array $data    Entry data (highlights, todos, journal_notes).
+	 * @return bool
+	 */
+	public static function upsert_entry( $user_id, $year, $month, $data ) {
+		global $wpdb;
+		$table      = $wpdb->prefix . 'jejak_journal_entries';
+		$existing   = self::get_entry( $user_id, $year, $month );
+		$month_name = gmdate( 'F', mktime( 0, 0, 0, $month, 1, 2000 ) );
+		$slug       = 'jj-' . strtolower( $month_name ) . '-' . $year;
+
+		$values = array(
+			'highlights'    => isset( $data['highlights'] ) ? wp_json_encode( $data['highlights'] ) : '[]',
+			'todos'         => isset( $data['todos'] ) ? wp_json_encode( $data['todos'] ) : '[]',
+			'journal_notes' => isset( $data['journal_notes'] ) ? wp_json_encode( $data['journal_notes'] ) : '[]',
+		);
+
+		if ( $existing ) {
+			return (bool) $wpdb->update(
+				$table,
+				$values,
+				array( 'id' => $existing['id'] ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+		}
+
+		return (bool) $wpdb->insert(
+			$table,
+			array_merge(
+				array(
+					'user_id' => $user_id,
+					'year'    => $year,
+					'month'   => $month,
+					'slug'    => $slug,
+				),
+				$values
+			),
+			array( '%d', '%d', '%d', '%s', '%s', '%s', '%s' )
+		);
 	}
 
 	/**
@@ -237,9 +312,9 @@ class DB {
 			return true;
 		}
 
-		$user       = get_userdata( $user_id );
-		$roles      = $user ? $user->roles : array();
-		$allowed    = self::get_allowed_roles();
+		$user    = get_userdata( $user_id );
+		$roles   = $user ? $user->roles : array();
+		$allowed = self::get_allowed_roles();
 
 		return ! empty( array_intersect( $roles, $allowed ) );
 	}

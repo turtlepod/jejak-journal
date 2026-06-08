@@ -4,15 +4,15 @@
  *
  * @package JejakJournal
  *
- * @var int $current_year  Current year.
- * @var int $current_month Current month.
+ * @var int   $current_year     Current year.
+ * @var int   $current_month    Current month.
+ * @var array $enabled_features Enabled feature keys.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Build months dropdown options.
 $months = array(
 	1  => __( 'January', 'jejak-journal' ),
 	2  => __( 'February', 'jejak-journal' ),
@@ -28,38 +28,48 @@ $months = array(
 	12 => __( 'December', 'jejak-journal' ),
 );
 
-// Build years dropdown (current year ± 5).
-$years = array();
-for ( $y = $current_year - 5; $y <= $current_year + 5; $y++ ) {
-	$years[] = $y;
-}
-
-$month_name = $months[ $current_month ] ?? '';
-$title      = sprintf( '%s %d', $month_name, $current_year );
+$month_name     = $months[ $current_month ] ?? '';
+$journal_title  = sprintf( '%s %d', $month_name, $current_year );
+$has_highlights = in_array( 'highlights', $enabled_features, true );
+$has_todos      = in_array( 'todos', $enabled_features, true );
+$has_journal    = in_array( 'journal', $enabled_features, true );
 ?>
 
 <div class="jejak-journal-app" id="jejak-journal-app"
 	data-year="<?php echo esc_attr( (string) $current_year ); ?>"
 	data-month="<?php echo esc_attr( (string) $current_month ); ?>"
 >
-	<!-- Header: Title + Month/Year Switcher -->
+
+	<!-- Header: Title + Navigation -->
 	<div class="jejak-header">
-		<h1 class="jejak-title"><?php echo esc_html( $title ); ?></h1>
-		<div class="jejak-switcher">
-			<select class="jejak-month-select" id="jejak-month-select" aria-label="<?php esc_attr_e( 'Select month', 'jejak-journal' ); ?>">
-				<?php foreach ( $months as $m_num => $m_name ) : ?>
-					<option value="<?php echo esc_attr( (string) $m_num ); ?>" <?php selected( $m_num, $current_month ); ?>>
-						<?php echo esc_html( $m_name ); ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
-			<select class="jejak-year-select" id="jejak-year-select" aria-label="<?php esc_attr_e( 'Select year', 'jejak-journal' ); ?>">
-				<?php foreach ( $years as $y ) : ?>
-					<option value="<?php echo esc_attr( (string) $y ); ?>" <?php selected( $y, $current_year ); ?>>
-						<?php echo esc_html( (string) $y ); ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
+		<h1 class="jejak-title"><?php echo esc_html( $journal_title ); ?></h1>
+		<div class="jejak-nav">
+			<button type="button" class="jejak-nav-btn" id="jejak-prev-month" title="<?php esc_attr_e( 'Previous month', 'jejak-journal' ); ?>">&larr;</button>
+			<button type="button" class="jejak-nav-btn jejak-nav-select" id="jejak-select-month">
+				<?php esc_html_e( 'Select Month', 'jejak-journal' ); ?>
+			</button>
+			<button type="button" class="jejak-nav-btn" id="jejak-next-month" title="<?php esc_attr_e( 'Next month', 'jejak-journal' ); ?>">&rarr;</button>
+		</div>
+	</div>
+
+	<!-- Month/Year Picker Modal -->
+	<div class="jejak-month-modal" id="jejak-month-modal" style="display:none;">
+		<div class="jejak-month-modal-backdrop" data-action="close-month-modal"></div>
+		<div class="jejak-month-modal-content">
+			<h3><?php esc_html_e( 'Select Month', 'jejak-journal' ); ?></h3>
+			<div class="jejak-month-modal-fields">
+				<select id="jejak-modal-year" aria-label="<?php esc_attr_e( 'Year', 'jejak-journal' ); ?>">
+				</select>
+				<select id="jejak-modal-month" aria-label="<?php esc_attr_e( 'Month', 'jejak-journal' ); ?>">
+					<?php foreach ( $months as $m_num => $m_name ) : ?>
+						<option value="<?php echo esc_attr( (string) $m_num ); ?>"><?php echo esc_html( $m_name ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<button type="button" class="jejak-btn jejak-btn-primary" id="jejak-modal-go">
+				<?php esc_html_e( 'Go', 'jejak-journal' ); ?>
+			</button>
+			<button type="button" class="jejak-btn jejak-modal-close" data-action="close-month-modal">&times;</button>
 		</div>
 	</div>
 
@@ -79,6 +89,7 @@ $title      = sprintf( '%s %d', $month_name, $current_year );
 	<!-- Sections (hidden by default, shown after load) -->
 	<div class="jejak-sections" id="jejak-sections" style="display:none;">
 
+		<?php if ( $has_highlights ) : ?>
 		<!-- Highlights Section -->
 		<section class="jejak-section jejak-highlights" id="jejak-highlights-section">
 			<h2 class="jejak-section-title"><?php esc_html_e( 'Highlights', 'jejak-journal' ); ?></h2>
@@ -87,16 +98,25 @@ $title      = sprintf( '%s %d', $month_name, $current_year );
 				+ <?php esc_html_e( 'Add highlight', 'jejak-journal' ); ?>
 			</button>
 		</section>
+		<?php endif; ?>
 
+		<?php if ( $has_todos ) : ?>
 		<!-- ToDos Section -->
 		<section class="jejak-section jejak-todos" id="jejak-todos-section">
 			<h2 class="jejak-section-title"><?php esc_html_e( 'To-Dos', 'jejak-journal' ); ?></h2>
 			<div class="jejak-todos-list" id="jejak-todos-list"></div>
-			<button type="button" class="jejak-btn jejak-btn-outline jejak-add-btn" id="jejak-add-todo">
-				+ <?php esc_html_e( 'Add to-do', 'jejak-journal' ); ?>
-			</button>
+			<div class="jejak-todos-actions">
+				<button type="button" class="jejak-btn jejak-btn-outline jejak-add-btn" id="jejak-add-todo">
+					+ <?php esc_html_e( 'Add to-do', 'jejak-journal' ); ?>
+				</button>
+				<button type="button" class="jejak-btn jejak-btn-outline" id="jejak-import-todos" style="display:none;">
+					<?php esc_html_e( 'Import from last month', 'jejak-journal' ); ?>
+				</button>
+			</div>
 		</section>
+		<?php endif; ?>
 
+		<?php if ( $has_journal ) : ?>
 		<!-- Journal Section -->
 		<section class="jejak-section jejak-journal-notes" id="jejak-journal-section">
 			<h2 class="jejak-section-title"><?php esc_html_e( 'Journal', 'jejak-journal' ); ?></h2>
@@ -114,6 +134,7 @@ $title      = sprintf( '%s %d', $month_name, $current_year );
 				</table>
 			</div>
 		</section>
+		<?php endif; ?>
 	</div>
 
 	<!-- Save notification toast -->

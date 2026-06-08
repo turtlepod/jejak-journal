@@ -31,13 +31,78 @@
 	line-height: 1.2;
 }
 
-.jejak-switcher {
+/* ── Navigation Buttons ────────────────────────── */
+.jejak-nav {
 	display: flex;
 	gap: 8px;
+	align-items: center;
 }
 
-.jejak-switcher select {
-	padding: 8px 12px;
+.jejak-nav-btn {
+	padding: 8px 16px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background: #fff;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background 0.2s, border-color 0.2s;
+}
+
+.jejak-nav-btn:hover {
+	background: #f0f0f0;
+	border-color: #bbb;
+}
+
+.jejak-nav-btn:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.jejak-nav-select {
+	font-weight: 500;
+	min-width: 130px;
+}
+
+/* ── Month Picker Modal ────────────────────────── */
+.jejak-month-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.jejak-month-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 50%);
+}
+
+.jejak-month-modal-content {
+	position: relative;
+	background: #fff;
+	border-radius: 12px;
+	padding: 28px 24px 24px;
+	width: 90%;
+	max-width: 360px;
+	box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
+}
+
+.jejak-month-modal-content h3 {
+	margin: 0 0 16px;
+	font-size: 16px;
+}
+
+.jejak-month-modal-fields {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.jejak-month-modal-fields select {
+	flex: 1;
+	padding: 10px 12px;
 	border: 1px solid #ddd;
 	border-radius: 6px;
 	font-size: 14px;
@@ -45,10 +110,15 @@
 	cursor: pointer;
 }
 
-.jejak-switcher select:focus {
+.jejak-month-modal-fields select:focus {
 	outline: none;
 	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+}
+
+#jejak-modal-go {
+	width: 100%;
+	padding: 10px;
+	font-size: 15px;
 }
 
 /* ── Sections ──────────────────────────────────── */
@@ -59,7 +129,7 @@
 .jejak-section-title {
 	font-size: 20px;
 	font-weight: 600;
-	margin: 0 0 16px 0;
+	margin: 0 0 16px;
 	padding-bottom: 8px;
 	border-bottom: 1px solid #eee;
 }
@@ -203,7 +273,7 @@
 .jejak-highlight-text:focus {
 	outline: none;
 	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+	box-shadow: 0 0 0 2px rgb(34 113 177 / 20%);
 }
 
 /* ── Icon Picker Modal ─────────────────────────── */
@@ -219,7 +289,7 @@
 .jejak-icon-modal-backdrop {
 	position: absolute;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
+	background: rgb(0 0 0 / 50%);
 }
 
 .jejak-icon-modal-content {
@@ -231,11 +301,11 @@
 	max-width: 420px;
 	max-height: 80vh;
 	overflow-y: auto;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
 }
 
 .jejak-icon-modal-content h3 {
-	margin: 0 0 12px 0;
+	margin: 0 0 12px;
 	font-size: 16px;
 }
 
@@ -431,7 +501,7 @@
 .jejak-note-textarea:focus {
 	outline: none;
 	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+	box-shadow: 0 0 0 2px rgb(34 113 177 / 20%);
 }
 
 /* ── Save Toast ────────────────────────────────── */
@@ -458,21 +528,57 @@
 }
 
 /* ── Responsive ────────────────────────────────── */
-@media (max-width: 600px) {
+@media (width <= 600px) {
 	.jejak-journal-app {
 		padding: 16px;
 	}
+
 	.jejak-header {
 		flex-direction: column;
 		align-items: flex-start;
 	}
+
 	.jejak-title {
 		font-size: 22px;
 	}
+
 	.jejak-icon-grid {
 		grid-template-columns: repeat(4, 1fr);
 	}
+
 	.jejak-col-date {
 		display: none;
 	}
+}
+
+/* ── Weekend Rows ──────────────────────────────── */
+.jejak-journal-row.is-weekend {
+	background: #fdf5e6;
+}
+
+.jejak-journal-row.is-weekend td {
+	border-bottom-color: #f0e6d3;
+}
+
+/* ── To-Do Actions Row ──────────────────────────── */
+.jejak-todos-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-top: 12px;
+}
+
+/* ── Imported To-Do Items ───────────────────────── */
+.jejak-todo-item.is-imported {
+	opacity: 0.6;
+}
+
+.jejak-todo-item.is-imported .jejak-todo-text {
+	text-decoration: line-through;
+	color: #999;
+	cursor: default;
+}
+
+.jejak-todo-item.is-imported .jejak-todo-checkbox {
+	cursor: not-allowed;
 }

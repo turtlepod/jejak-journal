@@ -25,8 +25,14 @@ function rest_register_routes() {
 			'callback'            => __NAMESPACE__ . '\\rest_get_entry',
 			'permission_callback' => __NAMESPACE__ . '\\rest_permission',
 			'args'                => array(
-				'year'  => array( 'required' => true, 'type' => 'integer' ),
-				'month' => array( 'required' => true, 'type' => 'integer' ),
+				'year'  => array(
+					'required' => true,
+					'type'     => 'integer',
+				),
+				'month' => array(
+					'required' => true,
+					'type'     => 'integer',
+				),
 			),
 		)
 	);

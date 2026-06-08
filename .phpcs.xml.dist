@@ -3,10 +3,25 @@
     <description>PHPCS rules for Jejak Journal plugin.</description>
 
     <file>.</file>
+    <exclude-pattern>*.js</exclude-pattern>
+    <exclude-pattern>*.json</exclude-pattern>
+    <exclude-pattern>*.css</exclude-pattern>
     <exclude-pattern>/vendor/*</exclude-pattern>
     <exclude-pattern>/node_modules/*</exclude-pattern>
     <exclude-pattern>/dist/*</exclude-pattern>
     <exclude-pattern>/tests/*</exclude-pattern>
+    <exclude-pattern>/assets/*</exclude-pattern>
+    <exclude-pattern>/.ddev/*</exclude-pattern>
+    <exclude-pattern>/wp-admin/*</exclude-pattern>
+    <exclude-pattern>/wp-includes/*</exclude-pattern>
+    <exclude-pattern>/wp-content/*</exclude-pattern>
+    <exclude-pattern>/wp-config.php</exclude-pattern>
+    <exclude-pattern>/wp-config-ddev.php</exclude-pattern>
+    <exclude-pattern>/wp-*.php</exclude-pattern>
+    <exclude-pattern>/xmlrpc.php</exclude-pattern>
+    <exclude-pattern>/index.php</exclude-pattern>
+    <exclude-pattern>/license.txt</exclude-pattern>
+    <exclude-pattern>/readme.html</exclude-pattern>
 
     <rule ref="WordPress">
         <exclude name="WordPress.Files.FileName"/>

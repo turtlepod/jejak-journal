@@ -41,7 +41,9 @@ function shortcode_render_journal( $atts ) { // phpcs:ignore Generic.CodeAnalysi
 		return '<div class="jejak-login-notice"><p>' . esc_html__( 'You do not have permission to manage journals.', 'jejak-journal' ) . '</p></div>';
 	}
 
-	$now         = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+	$enabled_features = get_option( 'jejak_journal_features', array( 'highlights', 'todos', 'journal' ) );
+
+	$now           = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
 	$current_year  = (int) gmdate( 'Y', $now );
 	$current_month = (int) gmdate( 'n', $now );
 

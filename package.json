@@ -4,13 +4,37 @@
   "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
   "private": true,
   "scripts": {
-    "build": "echo 'Build step TBD'",
-    "lint:js": "eslint assets/js",
-    "lint:css": "stylelint assets/css/**/*.css"
+    "prepare": "husky",
+    "build": "npm run lint && composer run test",
+    "lint": "npm run lint-php && npm run lint-js && npm run lint-css",
+    "lint-php": "composer run lint",
+    "lint-js": "eslint \"assets/js/**/*.js\"",
+    "lint-css": "stylelint \"assets/css/**/*.css\"",
+    "lint-fix": "npm run lint-fix-php && npm run lint-fix-js && npm run lint-fix-css",
+    "lint-fix-php": "composer run lint-fix",
+    "lint-fix-js": "eslint --fix \"assets/js/**/*.js\"",
+    "lint-fix-css": "stylelint --fix \"assets/css/**/*.css\"",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "clean-dist": "rm -rf ./dist"
+  },
+  "lint-staged": {
+    "*.php": [
+      "./vendor/bin/phpcs -s --standard=.phpcs.xml.dist"
+    ],
+    "assets/js/**/*.js": [
+      "eslint --fix"
+    ],
+    "assets/css/**/*.css": [
+      "stylelint --fix"
+    ]
   },
   "devDependencies": {
-    "eslint": "^8.0.0",
-    "stylelint": "^15.0.0",
-    "stylelint-config-standard": "^33.0.0"
+    "@playwright/test": "^1.58.2",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.4.3",
+    "stylelint": "^16.0.0",
+    "stylelint-config-standard": "^36.0.0"
   }
 }
