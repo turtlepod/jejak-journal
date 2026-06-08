@@ -138,8 +138,10 @@
 }
 
 .jejak-section-title {
-	font-size: 20px;
+	font-size: 14px;
 	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 	margin: 0 0 16px;
 	padding-bottom: 8px;
 	border-bottom: 1px solid #eee;
@@ -291,11 +293,11 @@
 	padding: 8px 12px;
 	border: 1px solid #ddd;
 	border-radius: 6px;
-	font-size: 14px;
+	font-size: 18px;
 	font-family: inherit;
 	line-height: 1.5;
 	resize: none;
-	min-height: 40px;
+	min-height: 30px;
 	outline: none;
 	transition: border-color 0.2s;
 	background: transparent;

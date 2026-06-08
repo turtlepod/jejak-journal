@@ -625,7 +625,7 @@
 	function autoResizeTextarea(textarea) {
 		// Reset to get true scrollHeight
 		textarea.style.height = 'auto';
-		var h = Math.max(textarea.scrollHeight, 60);
+		var h = Math.max(textarea.scrollHeight, 30);
 		textarea.style.height = h + 'px';
 	}
 
