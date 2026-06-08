@@ -16,6 +16,7 @@
 	var modalYear     = document.getElementById('jejak-modal-year');
 	var modalMonth    = document.getElementById('jejak-modal-month');
 	var modalGo       = document.getElementById('jejak-modal-go');
+	var modalToday    = document.getElementById('jejak-modal-today');
 	var contentEl     = document.getElementById('jejak-content');
 	var noEntryEl     = document.getElementById('jejak-no-entry');
 	var sectionsEl    = document.getElementById('jejak-sections');
@@ -72,6 +73,7 @@
 
 	// ── Save Notification ────────────────────────────
 	function showSaved() {
+		if (!savedToast) return;
 		savedToast.classList.add('is-visible');
 		clearTimeout(saveTimer);
 		saveTimer = setTimeout(function () {
@@ -79,10 +81,39 @@
 		}, 2000);
 	}
 
+	// ── URL Navigation ───────────────────────────────
+	function getMonthSlug(year, month) {
+		return 'jj-' + monthNames[month - 1].toLowerCase() + '-' + year;
+	}
+
+	function updateURL(year, month) {
+		var slug = getMonthSlug(year, month);
+		var url = new URL(window.location.href);
+		url.searchParams.set('jejak', slug);
+		window.history.replaceState({}, '', url.toString());
+	}
+
+	function getURLMonth() {
+		var url = new URL(window.location.href);
+		var param = url.searchParams.get('jejak');
+		if (param && /^jj-[a-z]+-\d{4}$/.test(param)) {
+			var parts = param.split('-');
+			var monthName = parts[1]; // e.g. "june"
+			var year = parseInt(parts[2], 10);
+			for (var i = 0; i < monthNames.length; i++) {
+				if (monthNames[i].toLowerCase() === monthName) {
+					return { year: year, month: i + 1 };
+				}
+			}
+		}
+		return null;
+	}
+
 	// ── Navigation ───────────────────────────────────
 	function switchTo(year, month) {
 		currentYear  = year;
 		currentMonth = month;
+		updateURL(year, month);
 		updateTitle(year, month);
 		updateModalSelections(year, month);
 		loadEntry(year, month);
@@ -150,6 +181,11 @@
 		switchTo(y, m);
 	});
 
+	modalToday.addEventListener('click', function () {
+		closeMonthModal();
+		switchTo(realCurrentYear, realCurrentMonth);
+	});
+
 	// ── Load Entry ───────────────────────────────────
 	function loadEntry(year, month) {
 		showLoading();
@@ -213,7 +249,16 @@
 		}
 	}
 
-	// ── Highlights ───────────────────────────────────
+	// ── Highlights + Icon Picker ─────────────────────
+	// Each highlight item stores the icon key (e.g. "star") in data-icon-key.
+	// The emoji is rendered from data.icons[key] on display.
+	var defaultIconKey = 'star';
+
+	function getEmoji(key) {
+		var icons = data.icons || {};
+		return icons[key] || '\u2B50';
+	}
+
 	function renderHighlights(items) {
 		if (!highlightsList) return;
 		highlightsList.innerHTML = '';
@@ -223,12 +268,14 @@
 	}
 
 	function createHighlightItem(item, index) {
+		var iconKey = item.icon_key || defaultIconKey;
+		var emoji = getEmoji(iconKey);
 		var div = document.createElement('div');
 		div.className = 'jejak-highlight-item';
 		div.dataset.index = index;
 		div.innerHTML =
-			'<button type="button" class="jejak-icon-picker-btn" data-action="pick-icon" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
-				(item.icon || '\u2B50') +
+			'<button type="button" class="jejak-icon-picker-btn" data-action="pick-icon" data-icon-key="' + iconKey + '" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
+				emoji +
 			'</button>' +
 			'<input type="text" class="jejak-highlight-text" value="' + escapeHtml(item.text || '') + '" placeholder="What happened?">' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
@@ -240,8 +287,8 @@
 		var items = highlightsList.querySelectorAll('.jejak-highlight-item');
 		return Array.prototype.map.call(items, function (el) {
 			return {
-				icon: el.querySelector('.jejak-icon-picker-btn').textContent.trim(),
-				text: el.querySelector('.jejak-highlight-text').value,
+				icon_key: el.querySelector('.jejak-icon-picker-btn').dataset.iconKey || defaultIconKey,
+				text: el.querySelector('.jejak-highlight-text').value || '',
 			};
 		});
 	}
@@ -287,7 +334,7 @@
 
 	if (addHighlight) {
 		addHighlight.addEventListener('click', function () {
-			var newItem = { icon: '\u2B50', text: '' };
+			var newItem = { icon_key: defaultIconKey, text: '' };
 			var item = createHighlightItem(newItem, highlightsList.children.length);
 			highlightsList.appendChild(item);
 			item.querySelector('.jejak-highlight-text').focus();
@@ -295,7 +342,7 @@
 		});
 	}
 
-	// ── Icon Picker ──────────────────────────────────
+	// ── Icon Picker Modal ────────────────────────────
 	function openIconPicker(triggerBtn) {
 		var existing = document.getElementById('jejak-icon-modal');
 		if (existing) existing.remove();
@@ -303,7 +350,7 @@
 		var icons = data.icons || {};
 		var iconHtml = '';
 		Object.keys(icons).forEach(function (key) {
-			iconHtml += '<button type="button" class="jejak-icon-option" data-icon="' + key + '">' + icons[key] + '</button>';
+			iconHtml += '<button type="button" class="jejak-icon-option" data-icon-key="' + key + '">' + icons[key] + '</button>';
 		});
 
 		var modal = document.createElement('div');
@@ -328,8 +375,10 @@
 		modal.querySelector('.jejak-icon-grid').addEventListener('click', function (e) {
 			var iconBtn = e.target.closest('.jejak-icon-option');
 			if (!iconBtn) return;
-			var emoji = iconBtn.textContent.trim();
+			var key = iconBtn.dataset.iconKey;
+			var emoji = getEmoji(key);
 			triggerBtn.textContent = emoji;
+			triggerBtn.dataset.iconKey = key;
 			modal.remove();
 			saveHighlights();
 		});
@@ -345,7 +394,7 @@
 			searchEl.addEventListener('input', function () {
 				var query = this.value.toLowerCase();
 				modal.querySelectorAll('.jejak-icon-option').forEach(function (btn) {
-					var key = btn.dataset.icon || '';
+					var key = btn.dataset.iconKey || '';
 					btn.style.display = key.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
 				});
 			});
@@ -368,11 +417,11 @@
 		var checked = item.done ? ' checked' : '';
 		var disabled = item.imported ? ' disabled' : '';
 		div.innerHTML =
-			'<label class="jejak-todo-label">' +
+			'<div class="jejak-todo-row">' +
+				'<span class="jejak-todo-custom-check" data-action="toggle-todo"></span>' +
 				'<input type="checkbox" class="jejak-todo-checkbox"' + checked + disabled + '>' +
-				'<span class="jejak-todo-custom-check"></span>' +
 				'<span class="jejak-todo-text" contenteditable="' + (item.imported ? 'false' : 'true') + '">' + escapeHtml(item.text || '') + '</span>' +
-			'</label>' +
+			'</div>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
 		return div;
 	}
@@ -391,15 +440,22 @@
 
 	if (todosList) {
 		todosList.addEventListener('click', function (e) {
+			// Custom check toggle
+			var check = e.target.closest('.jejak-todo-custom-check');
+			if (check) {
+				var row = check.closest('.jejak-todo-row');
+				var cb = row.querySelector('.jejak-todo-checkbox');
+				if (cb && !cb.disabled) {
+					cb.checked = !cb.checked;
+					saveTodos();
+				}
+				return;
+			}
+
+			// Remove button
 			var btn = e.target.closest('button');
 			if (btn && btn.dataset.action === 'remove') {
 				btn.closest('.jejak-todo-item').remove();
-				saveTodos();
-			}
-		});
-
-		todosList.addEventListener('change', function (e) {
-			if (e.target.classList.contains('jejak-todo-checkbox')) {
 				saveTodos();
 			}
 		});
@@ -439,7 +495,6 @@
 	}
 
 	importTodosBtn.addEventListener('click', function () {
-		// Calculate previous month
 		var prevMonth = currentMonth - 1;
 		var prevYear = currentYear;
 		if (prevMonth < 1) {
@@ -449,7 +504,6 @@
 
 		apiFetch(getEntryUrl(prevYear, prevMonth)).then(function (prevEntry) {
 			var prevTodos = prevEntry.todos || [];
-			// Filter: unchecked AND not already imported
 			var toImport = prevTodos.filter(function (t) {
 				return !t.done && !t.imported;
 			});
@@ -459,14 +513,12 @@
 				return;
 			}
 
-			// Mark source items as imported
 			prevTodos.forEach(function (t) {
 				if (!t.done && !t.imported) {
 					t.imported = true;
 				}
 			});
 
-			// Append to current month's todos with imported flag
 			var currentTodos = getTodosFromDOM();
 			toImport.forEach(function (t) {
 				currentTodos.push({
@@ -476,7 +528,6 @@
 				});
 			});
 
-			// Save both
 			var p1 = apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/todos', {
 				method: 'PUT',
 				body: JSON.stringify(currentTodos),
@@ -487,7 +538,6 @@
 			});
 
 			Promise.all([p1, p2]).then(function () {
-				// Reload current entry to get fresh data
 				apiFetch(getEntryUrl(currentYear, currentMonth)).then(function (entry) {
 					currentEntry = entry;
 					renderAll(entry);
@@ -522,19 +572,18 @@
 			tr.dataset.index = index;
 			var dayName = note.day_name || '';
 			var dayNameShort = dayName.substring(0, 3);
-			// Weekend detection
 			if (dayNameShort === 'Sat' || dayNameShort === 'Sun') {
 				tr.classList.add('is-weekend');
 			}
 			tr.innerHTML =
 				'<td class="jejak-col-day">' + note.day + ' <span class="jejak-day-name">' + dayNameShort + '</span></td>' +
-				'<td class="jejak-col-date">' + note.date + '</td>' +
 				'<td class="jejak-col-notes">' +
 					'<textarea class="jejak-note-textarea" rows="3" data-index="' + index + '">' + escapeHtml(note.notes || '') + '</textarea>' +
 				'</td>';
 			journalTbody.appendChild(tr);
 		});
 
+		// Auto-resize after render
 		journalTbody.querySelectorAll('.jejak-note-textarea').forEach(function (ta) {
 			autoResize(ta);
 		});
@@ -547,7 +596,8 @@
 			var ta = row.querySelector('.jejak-note-textarea');
 			return {
 				day: idx + 1,
-				date: row.querySelector('.jejak-col-date').textContent,
+				date: currentEntry && currentEntry.journal_notes && currentEntry.journal_notes[idx]
+					? currentEntry.journal_notes[idx].date : '',
 				day_name: currentEntry && currentEntry.journal_notes && currentEntry.journal_notes[idx]
 					? currentEntry.journal_notes[idx].day_name : '',
 				notes: ta ? ta.value : '',
@@ -556,8 +606,10 @@
 	}
 
 	function autoResize(textarea) {
+		// Reset to get true scrollHeight
 		textarea.style.height = 'auto';
-		textarea.style.height = Math.max(textarea.scrollHeight, 60) + 'px';
+		var h = Math.max(textarea.scrollHeight, 60);
+		textarea.style.height = h + 'px';
 	}
 
 	if (journalTbody) {
@@ -594,7 +646,15 @@
 	}
 
 	// ── Init ─────────────────────────────────────────
+	// Check URL param for persisted month
+	var urlMonth = getURLMonth();
+	if (urlMonth) {
+		currentYear = urlMonth.year;
+		currentMonth = urlMonth.month;
+	}
+
 	updateTitle(currentYear, currentMonth);
+	updateURL(currentYear, currentMonth);
 	populateModalYears();
 	loadEntry(currentYear, currentMonth);
 })();

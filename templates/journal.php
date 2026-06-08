@@ -66,9 +66,14 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 					<?php endforeach; ?>
 				</select>
 			</div>
-			<button type="button" class="jejak-btn jejak-btn-primary" id="jejak-modal-go">
-				<?php esc_html_e( 'Go', 'jejak-journal' ); ?>
-			</button>
+			<div class="jejak-month-modal-actions">
+				<button type="button" class="jejak-btn jejak-btn-primary" id="jejak-modal-go">
+					<?php esc_html_e( 'Go', 'jejak-journal' ); ?>
+				</button>
+				<button type="button" class="jejak-btn jejak-btn-outline" id="jejak-modal-today">
+					<?php esc_html_e( 'Today', 'jejak-journal' ); ?>
+				</button>
+			</div>
 			<button type="button" class="jejak-btn jejak-modal-close" data-action="close-month-modal">&times;</button>
 		</div>
 	</div>
@@ -103,16 +108,16 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 		<?php if ( $has_todos ) : ?>
 		<!-- ToDos Section -->
 		<section class="jejak-section jejak-todos" id="jejak-todos-section">
-			<h2 class="jejak-section-title"><?php esc_html_e( 'To-Dos', 'jejak-journal' ); ?></h2>
-			<div class="jejak-todos-list" id="jejak-todos-list"></div>
-			<div class="jejak-todos-actions">
-				<button type="button" class="jejak-btn jejak-btn-outline jejak-add-btn" id="jejak-add-todo">
-					+ <?php esc_html_e( 'Add to-do', 'jejak-journal' ); ?>
-				</button>
-				<button type="button" class="jejak-btn jejak-btn-outline" id="jejak-import-todos" style="display:none;">
-					<?php esc_html_e( 'Import from last month', 'jejak-journal' ); ?>
+			<div class="jejak-section-header">
+				<h2 class="jejak-section-title"><?php esc_html_e( 'To-Dos', 'jejak-journal' ); ?></h2>
+				<button type="button" class="jejak-btn jejak-btn-outline jejak-btn-sm" id="jejak-import-todos" style="display:none;">
+					<?php esc_html_e( 'Import', 'jejak-journal' ); ?>
 				</button>
 			</div>
+			<div class="jejak-todos-list" id="jejak-todos-list"></div>
+			<button type="button" class="jejak-btn jejak-btn-outline jejak-add-btn" id="jejak-add-todo">
+				+ <?php esc_html_e( 'Add to-do', 'jejak-journal' ); ?>
+			</button>
 		</section>
 		<?php endif; ?>
 
@@ -125,7 +130,6 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 					<thead>
 						<tr>
 							<th class="jejak-col-day"><?php esc_html_e( 'Day', 'jejak-journal' ); ?></th>
-							<th class="jejak-col-date"><?php esc_html_e( 'Date', 'jejak-journal' ); ?></th>
 							<th class="jejak-col-notes"><?php esc_html_e( 'Notes', 'jejak-journal' ); ?></th>
 						</tr>
 					</thead>
@@ -139,6 +143,6 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 
 	<!-- Save notification toast -->
 	<div class="jejak-saved-toast" id="jejak-saved-toast" aria-live="polite">
-		<?php esc_html_e( 'Saved.', 'jejak-journal' ); ?>
+		<?php esc_html_e( 'Saved', 'jejak-journal' ); ?>
 	</div>
 </div>

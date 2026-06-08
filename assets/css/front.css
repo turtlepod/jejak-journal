@@ -116,9 +116,20 @@
 }
 
 #jejak-modal-go {
-	width: 100%;
+	flex: 1;
 	padding: 10px;
 	font-size: 15px;
+}
+
+#jejak-modal-today {
+	padding: 10px 16px;
+	font-size: 15px;
+}
+
+.jejak-month-modal-actions {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 0;
 }
 
 /* ── Sections ──────────────────────────────────── */
@@ -132,6 +143,21 @@
 	margin: 0 0 16px;
 	padding-bottom: 8px;
 	border-bottom: 1px solid #eee;
+}
+
+.jejak-section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #eee;
+}
+
+.jejak-section-header .jejak-section-title {
+	margin: 0;
+	padding-bottom: 0;
+	border-bottom: none;
 }
 
 /* ── Buttons ───────────────────────────────────── */
@@ -369,12 +395,11 @@
 	border-bottom: 1px solid #f5f5f5;
 }
 
-.jejak-todo-label {
+.jejak-todo-row {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	flex: 1;
-	cursor: pointer;
 }
 
 .jejak-todo-checkbox {
@@ -394,6 +419,7 @@
 	justify-content: center;
 	transition: all 0.2s;
 	flex-shrink: 0;
+	cursor: pointer;
 }
 
 .jejak-todo-checkbox:checked + .jejak-todo-custom-check {
@@ -478,12 +504,6 @@
 	margin-left: 4px;
 }
 
-.jejak-col-date {
-	width: 110px;
-	color: #777;
-	font-size: 13px;
-}
-
 .jejak-note-textarea {
 	width: 100%;
 	padding: 8px 10px;
@@ -508,7 +528,7 @@
 .jejak-saved-toast {
 	position: fixed;
 	bottom: 24px;
-	right: 24px;
+	left: 24px;
 	background: #2c2c2c;
 	color: #fff;
 	padding: 10px 20px;
@@ -545,10 +565,6 @@
 	.jejak-icon-grid {
 		grid-template-columns: repeat(4, 1fr);
 	}
-
-	.jejak-col-date {
-		display: none;
-	}
 }
 
 /* ── Weekend Rows ──────────────────────────────── */
@@ -560,12 +576,11 @@
 	border-bottom-color: #f0e6d3;
 }
 
-/* ── To-Do Actions Row ──────────────────────────── */
-.jejak-todos-actions {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-	margin-top: 12px;
+/* ── Small Button ──────────────────────────────── */
+.jejak-btn-sm {
+	padding: 4px 12px;
+	font-size: 13px;
+	font-weight: 400;
 }
 
 /* ── Imported To-Do Items ───────────────────────── */
