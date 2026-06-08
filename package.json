@@ -1,0 +1,16 @@
+{
+  "name": "jejak-journal",
+  "version": "0.1.0-alpha",
+  "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Build step TBD'",
+    "lint:js": "eslint assets/js",
+    "lint:css": "stylelint assets/css/**/*.css"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "stylelint": "^15.0.0",
+    "stylelint-config-standard": "^33.0.0"
+  }
+}

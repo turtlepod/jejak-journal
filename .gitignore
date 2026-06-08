@@ -1,0 +1,10 @@
+node_modules/
+vendor/
+dist/
+.phpunit.result.cache
+test-results/
+.DS_Store
+*.log
+wp-config.php
+wp-config-ddev.php
+.ddev/

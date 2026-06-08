@@ -1,0 +1,246 @@
+<?php
+/**
+ * Database schema and CRUD for Jejak Journal.
+ *
+ * @package JejakJournal
+ */
+
+namespace JejakJournal;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Database handler class.
+ */
+class DB {
+
+	/**
+	 * DB version for schema migrations.
+	 *
+	 * @var int
+	 */
+	const DB_VERSION = 1;
+
+	/**
+	 * Install/upgrade database tables.
+	 */
+	public static function install() {
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+
+		// Journal entries table (post type backed by wp_posts, meta stored here).
+		$sql = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}jejak_journal_entries (
+			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id BIGINT(20) UNSIGNED NOT NULL,
+			year INT(4) UNSIGNED NOT NULL,
+			month TINYINT(2) UNSIGNED NOT NULL,
+			slug VARCHAR(50) NOT NULL,
+			highlights LONGTEXT DEFAULT NULL,
+			todos LONGTEXT DEFAULT NULL,
+			journal_notes LONGTEXT DEFAULT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			UNIQUE KEY user_month (user_id, year, month),
+			KEY user_id (user_id)
+		) $charset_collate;";
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql );
+
+		update_option( 'jejak_journal_db_version', self::DB_VERSION );
+	}
+
+	/**
+	 * Get or create a journal entry for a user + year + month.
+	 *
+	 * @param int $user_id User ID.
+	 * @param int $year    Year.
+	 * @param int $month   Month (1-12).
+	 * @return array|null
+	 */
+	public static function get_entry( $user_id, $year, $month ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'jejak_journal_entries';
+
+		$entry = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE user_id = %d AND year = %d AND month = %d",
+				$user_id,
+				$year,
+				$month
+			),
+			ARRAY_A
+		);
+
+		if ( $entry ) {
+			$entry['highlights']   = $entry['highlights'] ? json_decode( $entry['highlights'], true ) : array();
+			$entry['todos']        = $entry['todos'] ? json_decode( $entry['todos'], true ) : array();
+			$entry['journal_notes'] = $entry['journal_notes'] ? json_decode( $entry['journal_notes'], true ) : self::generate_empty_journal( (int) $month, (int) $year );
+			return $entry;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Create a new journal entry.
+	 *
+	 * @param int $user_id User ID.
+	 * @param int $year    Year.
+	 * @param int $month   Month (1-12).
+	 * @return array|null Created entry or null.
+	 */
+	public static function create_entry( $user_id, $year, $month ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'jejak_journal_entries';
+
+		$month_name  = gmdate( 'F', mktime( 0, 0, 0, $month, 1, 2000 ) );
+		$slug        = 'jj-' . strtolower( $month_name ) . '-' . $year;
+		$journal     = self::generate_empty_journal( $month, $year );
+
+		$result = $wpdb->insert(
+			$table,
+			array(
+				'user_id'       => $user_id,
+				'year'          => $year,
+				'month'         => $month,
+				'slug'          => $slug,
+				'highlights'    => wp_json_encode( array() ),
+				'todos'         => wp_json_encode( array() ),
+				'journal_notes' => wp_json_encode( $journal ),
+			),
+			array( '%d', '%d', '%d', '%s', '%s', '%s', '%s' )
+		);
+
+		if ( ! $result ) {
+			return null;
+		}
+
+		return self::get_entry( $user_id, $year, $month );
+	}
+
+	/**
+	 * Update highlights for an entry.
+	 *
+	 * @param int   $entry_id   Entry ID.
+	 * @param array $highlights Array of highlight items.
+	 * @return bool
+	 */
+	public static function update_highlights( $entry_id, $highlights ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'jejak_journal_entries';
+		return (bool) $wpdb->update(
+			$table,
+			array( 'highlights' => wp_json_encode( $highlights ) ),
+			array( 'id' => $entry_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
+	 * Update todos for an entry.
+	 *
+	 * @param int   $entry_id Entry ID.
+	 * @param array $todos    Array of todo items.
+	 * @return bool
+	 */
+	public static function update_todos( $entry_id, $todos ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'jejak_journal_entries';
+		return (bool) $wpdb->update(
+			$table,
+			array( 'todos' => wp_json_encode( $todos ) ),
+			array( 'id' => $entry_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
+	 * Update journal notes for an entry.
+	 *
+	 * @param int   $entry_id      Entry ID.
+	 * @param array $journal_notes Array of journal day entries.
+	 * @return bool
+	 */
+	public static function update_journal_notes( $entry_id, $journal_notes ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'jejak_journal_entries';
+		return (bool) $wpdb->update(
+			$table,
+			array( 'journal_notes' => wp_json_encode( $journal_notes ) ),
+			array( 'id' => $entry_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
+	 * Generate empty journal structure for a month.
+	 *
+	 * @param int $month Month.
+	 * @param int $year  Year.
+	 * @return array
+	 */
+	public static function generate_empty_journal( $month, $year ) {
+		$days_in_month = (int) gmdate( 't', mktime( 0, 0, 0, $month, 1, $year ) );
+		$journal       = array();
+
+		for ( $day = 1; $day <= $days_in_month; $day++ ) {
+			$timestamp   = mktime( 0, 0, 0, $month, $day, $year );
+			$day_name    = gmdate( 'D', $timestamp );
+			$date_str    = gmdate( 'Y-m-d', $timestamp );
+			$journal[]   = array(
+				'day'   => $day,
+				'date'  => $date_str,
+				'day_name' => $day_name,
+				'notes' => '',
+			);
+		}
+
+		return $journal;
+	}
+
+	/**
+	 * Get allowed roles from settings.
+	 *
+	 * @return array
+	 */
+	public static function get_allowed_roles() {
+		$roles = get_option( 'jejak_journal_roles', array( 'administrator' ) );
+		if ( ! is_array( $roles ) ) {
+			$roles = array( 'administrator' );
+		}
+		return $roles;
+	}
+
+	/**
+	 * Check if a user can manage journals.
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool
+	 */
+	public static function user_can_manage( $user_id = 0 ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+		if ( ! $user_id ) {
+			return false;
+		}
+
+		// Always allow administrators.
+		if ( user_can( $user_id, 'manage_options' ) ) {
+			return true;
+		}
+
+		$user       = get_userdata( $user_id );
+		$roles      = $user ? $user->roles : array();
+		$allowed    = self::get_allowed_roles();
+
+		return ! empty( array_intersect( $roles, $allowed ) );
+	}
+}

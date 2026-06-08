@@ -1,0 +1,32 @@
+{
+  "name": "turtlepod/jejak-journal",
+  "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "David Chandra Purnama",
+      "email": "turtlepod.xyz@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.2"
+  },
+  "require-dev": {
+    "wp-coding-standards/wpcs": "^3.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpunit/phpunit": "^9.0",
+    "10up/wp_mock": "^1.0",
+    "yoast/phpunit-polyfills": "^2.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "scripts": {
+    "lint": "phpcs --standard=.phpcs.xml.dist",
+    "lint-fix": "phpcbf --standard=.phpcs.xml.dist",
+    "test": "phpunit"
+  }
+}
