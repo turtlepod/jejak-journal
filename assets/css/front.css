@@ -57,6 +57,7 @@ button.jejak-nav-btn {
 button.jejak-nav-btn:hover {
 	background: #f0f0f0;
 	border-color: #bbb;
+	color: #2c2c2c;
 }
 
 button.jejak-nav-btn:active {
@@ -194,6 +195,7 @@ button.jejak-btn {
 
 button.jejak-btn:hover {
 	background: #f0f0f0;
+	color: #2c2c2c;
 }
 
 button.jejak-btn:active {
@@ -271,6 +273,8 @@ button.jejak-remove-btn {
 }
 
 button.jejak-remove-btn:hover {
+	background: transparent;
+	border-color: transparent;
 	color: #e74c3c;
 }
 
@@ -468,6 +472,7 @@ a.jejak-login-btn:focus-visible {
 }
 
 .jejak-modal-close:hover {
+	background: none;
 	color: #333;
 }
 
