@@ -428,7 +428,7 @@
 				'<div class="jejak-icon-grid">' + iconHtml + '</div>' +
 				'<button type="button" class="jejak-btn jejak-modal-close" data-action="dismiss-overlay">\u00D7</button>' +
 			'</div>';
-		var overlay = createOverlay(html, '#jejak-icon-search');
+		var overlay = createOverlay(html);
 
 		overlay.querySelector('.jejak-icon-grid').addEventListener('click', function (e) {
 			var iconBtn = e.target.closest('.jejak-icon-option');
