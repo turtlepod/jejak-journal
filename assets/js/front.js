@@ -346,7 +346,7 @@
 			'<button type="button" class="jejak-field-control jejak-icon-picker-btn" data-action="pick-icon" data-icon-key="' + iconKey + '" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
 				emoji +
 			'</button>' +
-			'<textarea class="jejak-field-textarea jejak-highlight-text" rows="1" placeholder="What happened?">' + escapeHtml(item.text || '') + '</textarea>' +
+			'<textarea class="jejak-field-textarea jejak-highlight-text" rows="1">' + escapeHtml(item.text || '') + '</textarea>' +
 			'<button type="button" class="jejak-remove-btn" data-action="remove" title="Remove">\u00D7</button>';
 		return div;
 	}
