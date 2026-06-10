@@ -409,6 +409,8 @@ a.jejak-login-btn:focus-visible {
 .jejak-icon-picker-btn {
 	font-size: 20px;
 	padding: 5px;
+	background: #fff;
+	border-radius: 6px;
 }
 
 /* ── Icon Picker ───────────────────────────────── */
