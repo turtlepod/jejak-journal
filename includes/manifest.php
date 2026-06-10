@@ -161,15 +161,31 @@ function manifest_get_icons() {
 
 	if ( $icon_192 && $icon_512 ) {
 		return array(
-			array( 'src' => $icon_192, 'sizes' => '192x192', 'type' => 'image/png' ),
-			array( 'src' => $icon_512, 'sizes' => '512x512', 'type' => 'image/png' ),
+			array(
+				'src'   => $icon_192,
+				'sizes' => '192x192',
+				'type'  => 'image/png',
+			),
+			array(
+				'src'   => $icon_512,
+				'sizes' => '512x512',
+				'type'  => 'image/png',
+			),
 		);
 	}
 
 	// Fallback to plugin default icons.
 	$base = JEJAK_JOURNAL_PLUGIN_URL . 'assets/images/';
 	return array(
-		array( 'src' => $base . 'icon-192.png', 'sizes' => '192x192', 'type' => 'image/png' ),
-		array( 'src' => $base . 'icon-512.png', 'sizes' => '512x512', 'type' => 'image/png' ),
+		array(
+			'src'   => $base . 'icon-192.png',
+			'sizes' => '192x192',
+			'type'  => 'image/png',
+		),
+		array(
+			'src'   => $base . 'icon-512.png',
+			'sizes' => '512x512',
+			'type'  => 'image/png',
+		),
 	);
 }

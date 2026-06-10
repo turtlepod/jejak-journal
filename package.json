@@ -1,40 +1,55 @@
 {
   "name": "jejak-journal",
-  "version": "0.1.0-alpha",
-  "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
+  "version": "0.1.1-alpha",
   "private": true,
-  "scripts": {
-    "prepare": "husky",
-    "build": "npm run lint && composer run test",
-    "lint": "npm run lint-php && npm run lint-js && npm run lint-css",
-    "lint-php": "composer run lint",
-    "lint-js": "eslint \"assets/js/**/*.js\"",
-    "lint-css": "stylelint \"assets/css/**/*.css\"",
-    "lint-fix": "npm run lint-fix-php && npm run lint-fix-js && npm run lint-fix-css",
-    "lint-fix-php": "composer run lint-fix",
-    "lint-fix-js": "eslint --fix \"assets/js/**/*.js\"",
-    "lint-fix-css": "stylelint --fix \"assets/css/**/*.css\"",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "clean-dist": "rm -rf ./dist"
-  },
-  "lint-staged": {
-    "*.php": [
-      "./vendor/bin/phpcs -s --standard=.phpcs.xml.dist"
-    ],
-    "assets/js/**/*.js": [
-      "eslint --fix"
-    ],
-    "assets/css/**/*.css": [
-      "stylelint --fix"
-    ]
-  },
+  "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
+  "license": "GPL-2.0-or-later",
   "devDependencies": {
+    "@10up/babel-preset-default": "^2.1.2",
     "@playwright/test": "^1.58.2",
+    "10up-toolkit": "^6.5.1",
+    "ajv": "^8.12.0",
     "eslint": "^8.57.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.4.3",
     "stylelint": "^16.0.0",
-    "stylelint-config-standard": "^36.0.0"
+    "stylelint-config-standard": "^36.0.0",
+    "webpack": "5.105.3"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "start": "npm run watch",
+    "watch": "10up-toolkit watch --port=5010",
+    "build": "npm run lint && 10up-toolkit build",
+    "format-js": "10up-toolkit format-js",
+    "lint": "npm run lint-php && npm run lint-js && npm run lint-css",
+    "lint-php": "composer run lint",
+    "lint-js": "eslint \"assets/js/*.js\"",
+    "lint-css": "stylelint \"assets/css/**/*.css\"",
+    "lint-fix": "npm run lint-fix-js && npm run lint-fix-css",
+    "lint-fix-js": "eslint --fix \"assets/js/*.js\"",
+    "lint-fix-css": "stylelint --fix \"assets/css/**/*.css\"",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "zip": "npm run build && composer run test && version=$(node -p \"require('./package.json').version\") && cd .. && zip -r jejak-journal.$version.zip jejak-journal -x '*/.?*' -x '*node_modules*' -x '*/vendor/*' -x '*/test-results/*' -x '*/tests/e2e/report/*' -x '*/playwright-report/*'",
+    "clean-dist": "rm -rf ./dist"
+  },
+  "10up-toolkit": {
+    "entry": {
+      "front": "./assets/js/jejak-front.js",
+      "front-style": "./assets/css/jejak-front.css"
+    }
+  },
+  "lint-staged": {
+    "*.php": [
+      "./vendor/bin/phpcs -s --runtime-set testVersion 8.2- --runtime-set ignore_warnings_on_exit 0"
+    ],
+    "assets/js/*.js": [
+      "eslint --fix"
+    ],
+    
+    "assets/css/**/*.css": [
+      "stylelint --fix"
+    ]
   }
 }

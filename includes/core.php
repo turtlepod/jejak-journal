@@ -44,7 +44,7 @@ function on_plugins_loaded() {
  */
 function enqueue_front_scripts() {
 	global $post;
-	$has_shortcode = is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'jejak-journal' );
+	$has_shortcode     = is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'jejak-journal' );
 	$is_theme_template = is_a( $post, 'WP_Post' ) && 'templates/jejak.php' === get_page_template_slug( $post->ID );
 	if ( ! $has_shortcode && ! $is_theme_template ) {
 		return;
@@ -52,18 +52,38 @@ function enqueue_front_scripts() {
 
 	$ver = JEJAK_JOURNAL_VERSION;
 
+	$css_asset_file = JEJAK_JOURNAL_PLUGIN_DIR . 'dist/css/front-style.asset.php';
+	if ( file_exists( $css_asset_file ) ) {
+		$css_asset = require $css_asset_file;
+		$css_deps  = $css_asset['dependencies'] ?? array();
+		$css_ver   = $css_asset['version'] ?? $ver;
+	} else {
+		$css_deps = array();
+		$css_ver  = $ver;
+	}
+
 	wp_enqueue_style(
 		'jejak-journal-front',
-		JEJAK_JOURNAL_PLUGIN_URL . 'assets/css/front.css',
-		array(),
-		$ver
+		JEJAK_JOURNAL_PLUGIN_URL . 'dist/css/front-style.css',
+		$css_deps,
+		$css_ver
 	);
+
+	$js_asset_file = JEJAK_JOURNAL_PLUGIN_DIR . 'dist/js/front.asset.php';
+	if ( file_exists( $js_asset_file ) ) {
+		$js_asset = require $js_asset_file;
+		$js_deps  = $js_asset['dependencies'] ?? array();
+		$js_ver   = $js_asset['version'] ?? $ver;
+	} else {
+		$js_deps = array();
+		$js_ver  = $ver;
+	}
 
 	wp_enqueue_script(
 		'jejak-journal-front',
-		JEJAK_JOURNAL_PLUGIN_URL . 'assets/js/front.js',
-		array(),
-		$ver,
+		JEJAK_JOURNAL_PLUGIN_URL . 'dist/js/front.js',
+		$js_deps,
+		$js_ver,
 		true
 	);
 

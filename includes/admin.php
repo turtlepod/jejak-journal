@@ -94,7 +94,6 @@ function admin_register_settings() {
 			'sanitize_callback' => 'sanitize_text_field',
 		)
 	);
-
 }
 
 /**
