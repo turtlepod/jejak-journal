@@ -41,7 +41,9 @@ function on_plugins_loaded() {
  */
 function enqueue_front_scripts() {
 	global $post;
-	if ( ! is_a( $post, 'WP_Post' ) || ! has_shortcode( $post->post_content, 'jejak-journal' ) ) {
+	$has_shortcode = is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'jejak-journal' );
+	$is_theme_template = is_a( $post, 'WP_Post' ) && 'templates/jejak.php' === get_page_template_slug( $post->ID );
+	if ( ! $has_shortcode && ! $is_theme_template ) {
 		return;
 	}
 
