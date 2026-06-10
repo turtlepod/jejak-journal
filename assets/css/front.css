@@ -649,7 +649,7 @@ a.jejak-login-btn:focus-visible {
 
 	.jejak-header {
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 	}
 
 	.jejak-title {
