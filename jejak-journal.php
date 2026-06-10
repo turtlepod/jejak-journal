@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JEJAK_JOURNAL_VERSION', '0.1.0-alpha' );
+define( 'JEJAK_JOURNAL_VERSION', '0.1.1-alpha' );
 define( 'JEJAK_JOURNAL_PLUGIN_FILE', __FILE__ );
 define( 'JEJAK_JOURNAL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JEJAK_JOURNAL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
