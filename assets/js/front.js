@@ -643,7 +643,7 @@
 					'<span class="jejak-day-header">' + dayNameShort + '</span>' +
 					'<span class="jejak-day-number">' + note.day + '</span>' +
 				'</div>' +
-				'<textarea class="jejak-field-textarea jejak-note-textarea" rows="1" placeholder="Notes…" data-index="' + index + '">' + escapeHtml(note.notes || '') + '</textarea>';
+				'<textarea class="jejak-field-textarea jejak-note-textarea" rows="1" data-index="' + index + '">' + escapeHtml(note.notes || '') + '</textarea>';
 			journalTbody.appendChild(row);
 		});
 
