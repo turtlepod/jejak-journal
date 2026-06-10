@@ -21,7 +21,7 @@
 	gap: 12px;
 	margin-bottom: 32px;
 	padding-bottom: 16px;
-	border-bottom: 2px solid #eee;
+	border-bottom: 2px solid #ddd;
 }
 
 .jejak-title {
@@ -56,7 +56,7 @@ button.jejak-nav-btn {
 
 button.jejak-nav-btn:hover {
 	background: #f0f0f0;
-	border-color: #bbb;
+	border-color: #ddd;
 	color: #2c2c2c;
 }
 
@@ -155,7 +155,7 @@ button.jejak-nav-btn:focus-visible {
 	letter-spacing: 0.5px;
 	margin: 0 0 16px;
 	padding-bottom: 8px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #ddd;
 }
 
 .jejak-section-header {
@@ -164,7 +164,7 @@ button.jejak-nav-btn:focus-visible {
 	align-items: center;
 	margin-bottom: 16px;
 	padding-bottom: 8px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #ddd;
 }
 
 .jejak-section-header .jejak-section-title {
@@ -235,7 +235,7 @@ button.jejak-btn-outline:hover {
 }
 
 button.jejak-btn-outline:active {
-	border-color: #bbb;
+	border-color: #ddd;
 	background: #eee;
 }
 
@@ -356,7 +356,7 @@ a.jejak-login-btn:focus-visible {
 	align-items: flex-start;
 	gap: 10px;
 	padding: 10px 0;
-	border-bottom: 1px solid #f5f5f5;
+	border-bottom: 1px solid #ddd;
 }
 
 .jejak-field-control {
@@ -485,7 +485,7 @@ a.jejak-login-btn:focus-visible {
 /* .jejak-todo-custom-check — extends jejak-field-control */
 
 .jejak-todo-custom-check {
-	border-color: #bbb;
+	border-color: #ddd;
 	border-radius: 6px;
 	background: #e8e8e8;
 }
@@ -494,7 +494,7 @@ a.jejak-login-btn:focus-visible {
 	content: "";
 	width: 8px;
 	height: 14px;
-	border: solid #bbb;
+	border: solid #ddd;
 	border-width: 0 2px 2px 0;
 	transform: rotate(45deg);
 	margin-top: -2px;
@@ -540,7 +540,7 @@ a.jejak-login-btn:focus-visible {
 	border-radius: 6px;
 	overflow: hidden;
 	background: #e8e8e8;
-	border-color: #bbb;
+	border-color: #ddd;
 	cursor: default;
 }
 
