@@ -55,6 +55,46 @@ function admin_register_settings() {
 			'sanitize_callback' => __NAMESPACE__ . '\\sanitize_features',
 		)
 	);
+	register_setting(
+		'jejak_journal_settings',
+		'jejak_pwa_enabled',
+		array(
+			'type'              => 'boolean',
+			'default'           => false,
+			'sanitize_callback' => 'rest_sanitize_boolean',
+		)
+	);
+
+	register_setting(
+		'jejak_journal_settings',
+		'jejak_pwa_app_name',
+		array(
+			'type'              => 'string',
+			'default'           => '',
+			'sanitize_callback' => 'sanitize_text_field',
+		)
+	);
+
+	register_setting(
+		'jejak_journal_settings',
+		'jejak_pwa_short_name',
+		array(
+			'type'              => 'string',
+			'default'           => '',
+			'sanitize_callback' => 'sanitize_text_field',
+		)
+	);
+
+	register_setting(
+		'jejak_journal_settings',
+		'jejak_pwa_theme_color',
+		array(
+			'type'              => 'string',
+			'default'           => '#1a1a1b',
+			'sanitize_callback' => 'sanitize_text_field',
+		)
+	);
+
 }
 
 /**
@@ -141,6 +181,33 @@ function admin_page_settings() {
 						<p class="description">
 							<?php esc_html_e( 'Administrators always have access. Select additional roles that can create and edit journals.', 'jejak-journal' ); ?>
 						</p>
+					</td>
+				</tr>
+								<tr>
+					<th scope="row"><?php esc_html_e( 'PWA', 'jejak-journal' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="jejak_pwa_enabled" value="1" <?php checked( get_option( 'jejak_pwa_enabled', false ) ); ?> />
+							<?php esc_html_e( 'Enable Progressive Web App support', 'jejak-journal' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jejak_pwa_app_name"><?php esc_html_e( 'App name', 'jejak-journal' ); ?></label></th>
+					<td>
+						<input type="text" id="jejak_pwa_app_name" name="jejak_pwa_app_name" value="<?php echo esc_attr( get_option( 'jejak_pwa_app_name', '' ) ); ?>" class="regular-text" />
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jejak_pwa_short_name"><?php esc_html_e( 'Short name', 'jejak-journal' ); ?></label></th>
+					<td>
+						<input type="text" id="jejak_pwa_short_name" name="jejak_pwa_short_name" value="<?php echo esc_attr( get_option( 'jejak_pwa_short_name', '' ) ); ?>" class="regular-text" maxlength="12" />
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jejak_pwa_theme_color"><?php esc_html_e( 'Theme color', 'jejak-journal' ); ?></label></th>
+					<td>
+						<input type="text" id="jejak_pwa_theme_color" name="jejak_pwa_theme_color" value="<?php echo esc_attr( get_option( 'jejak_pwa_theme_color', '#1a1a1b' ) ); ?>" class="medium-text" />
 					</td>
 				</tr>
 				<tr>

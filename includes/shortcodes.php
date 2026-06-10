@@ -18,6 +18,7 @@ add_action( 'init', __NAMESPACE__ . '\\shortcodes_setup' );
  */
 function shortcodes_setup() {
 	add_shortcode( 'jejak-journal', __NAMESPACE__ . '\\shortcode_render_journal' );
+	add_shortcode( 'jejak_install_button', __NAMESPACE__ . '\\shortcode_install_button' );
 }
 
 /**
@@ -50,4 +51,47 @@ function shortcode_render_journal( $atts ) { // phpcs:ignore Generic.CodeAnalysi
 	ob_start();
 	require JEJAK_JOURNAL_PLUGIN_DIR . 'templates/journal.php';
 	return ob_get_clean();
+}
+/**
+ * [jejak_install_button]
+ *
+ * Usage:
+ * [jejak_install_button]
+ * [jejak_install_button label="Install App" tag="a"]
+ *
+ * @param array<string, string> $atts Shortcode attrs.
+ * @return string
+ */
+function shortcode_install_button( $atts ) {
+	if ( ! get_option( 'jejak_pwa_enabled', false ) ) {
+		return '';
+	}
+
+	$atts = shortcode_atts(
+		array(
+			'label' => __( 'Install App', 'jejak-journal' ),
+			'tag'   => 'button',
+			'class' => '',
+		),
+		$atts,
+		'jejak_install_button'
+	);
+
+	$tag   = 'a' === strtolower( $atts['tag'] ) ? 'a' : 'button';
+	$label = wp_strip_all_tags( (string) $atts['label'] );
+	$class = 'jejak-install-app-btn' . ( $atts['class'] ? ' ' . esc_attr( $atts['class'] ) : '' );
+
+	if ( 'a' === $tag ) {
+		return sprintf(
+			'<a href="#" class="%s" data-jejak-install-app role="button">%s</a>',
+			esc_attr( $class ),
+			esc_html( $label )
+		);
+	}
+
+	return sprintf(
+		'<button type="button" class="%s" data-jejak-install-app>%s</button>',
+		esc_attr( $class ),
+		esc_html( $label )
+	);
 }

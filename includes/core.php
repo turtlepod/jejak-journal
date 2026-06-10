@@ -15,6 +15,7 @@ require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/class-jejak-db.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/rest.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/shortcodes.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/admin.php';
+require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/manifest.php';
 
 register_activation_hook( JEJAK_JOURNAL_PLUGIN_FILE, __NAMESPACE__ . '\\on_activation' );
 
@@ -25,6 +26,7 @@ add_action( 'plugins_loaded', __NAMESPACE__ . '\\on_plugins_loaded' );
  */
 function on_activation() {
 	DB::install();
+	manifest_register_rewrite();
 	flush_rewrite_rules();
 }
 
@@ -34,6 +36,7 @@ function on_activation() {
 function on_plugins_loaded() {
 	load_plugin_textdomain( 'jejak-journal', false, dirname( plugin_basename( JEJAK_JOURNAL_PLUGIN_FILE ) ) . '/languages' );
 	add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\enqueue_front_scripts' );
+	manifest_setup();
 }
 
 /**
