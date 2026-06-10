@@ -390,7 +390,7 @@ a.jejak-login-btn:focus-visible {
 	min-height: 30px;
 	outline: none;
 	transition: border-color 0.2s;
-	background: transparent;
+	background: #fff;
 }
 
 .jejak-field-textarea:focus {
