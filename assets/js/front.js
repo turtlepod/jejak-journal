@@ -548,11 +548,27 @@
 	// ── Import Todos ─────────────────────────────────
 	function updateImportButton() {
 		if (!importTodosBtn) return;
-		if (isCurrentMonth()) {
-			importTodosBtn.style.display = '';
-		} else {
+		if (!isCurrentMonth()) {
 			importTodosBtn.style.display = 'none';
+			return;
 		}
+
+		var prevMonth = currentMonth - 1;
+		var prevYear = currentYear;
+		if (prevMonth < 1) {
+			prevMonth = 12;
+			prevYear--;
+		}
+
+		apiFetch(getEntryUrl(prevYear, prevMonth)).then(function (prevEntry) {
+			var prevTodos = prevEntry.todos || [];
+			var hasImportable = prevTodos.some(function (t) {
+				return !t.done && !t.imported;
+			});
+			importTodosBtn.style.display = hasImportable ? '' : 'none';
+		}).catch(function () {
+			importTodosBtn.style.display = 'none';
+		});
 	}
 
 	importTodosBtn.addEventListener('click', function () {
