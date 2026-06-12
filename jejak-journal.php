@@ -3,7 +3,7 @@
  * Plugin Name: Jejak Journal
  * Description: Private monthly journal with highlights, todos, and notes. Self-hosted on your WordPress site.
  * Plugin URI: https://pandaplugin.com/jejak/
- * Version: 0.1.0-alpha
+ * Version: 0.1.1-alpha
  * Requires at least: 6.0
  * Requires PHP: 8.2
  * Author: David Chandra Purnama
