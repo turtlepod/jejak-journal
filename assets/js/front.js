@@ -35,6 +35,8 @@
 	var currentYear   = parseInt(app.dataset.year, 10);
 	var currentMonth  = parseInt(app.dataset.month, 10);
 	var currentEntry  = null;
+	var currentUpdatedAt = null;
+	var lastLoadTime  = 0;
 	var saveTimer     = null;
 
 	var features = data.features || ['highlights', 'todos', 'journal'];
@@ -62,8 +64,15 @@
 		opts.headers['X-WP-Nonce'] = data.rest_nonce;
 		opts.headers['Content-Type'] = 'application/json';
 		return fetch(url, opts).then(function (res) {
-			if (!res.ok) throw new Error('API error ' + res.status);
-			return res.json();
+			return res.json().then(function (body) {
+				if (!res.ok) {
+					var err = new Error('API error ' + res.status);
+					err.status = res.status;
+					err.body = body;
+					throw err;
+				}
+				return body;
+			});
 		});
 	}
 
@@ -79,6 +88,16 @@
 		saveTimer = setTimeout(function () {
 			savedToast.classList.remove('is-visible');
 		}, 2000);
+	}
+
+	// ── Conflict Handler ─────────────────────────────
+	function handleConflict(err) {
+		if (err && err.status === 409) {
+			showNotice(data.i18n.conflict || 'This entry was updated on another device. Reloading...');
+			loadEntry(currentYear, currentMonth);
+			return true;
+		}
+		return false;
 	}
 
 	// ── Overlay / Dialog Helper ──────────────────────
@@ -258,6 +277,8 @@
 		showLoading();
 		apiFetch(getEntryUrl(year, month)).then(function (entry) {
 			currentEntry = entry;
+			currentUpdatedAt = entry.updated_at || null;
+			lastLoadTime = Date.now();
 			renderAll(entry);
 			showSections();
 			updateImportButton();
@@ -394,10 +415,13 @@
 		var highlights = getHighlightsFromDOM();
 		apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/highlights', {
 			method: 'PUT',
-			body: JSON.stringify(highlights),
-		}).then(function () {
+			body: JSON.stringify({ data: highlights, updated_at: currentUpdatedAt }),
+		}).then(function (res) {
+			currentUpdatedAt = res.updated_at;
 			showSaved();
-		}).catch(function () { /* silent */ });
+		}).catch(function (err) {
+			if (!handleConflict(err)) { /* silent */ }
+		});
 	}
 
 	if (addHighlight) {
@@ -539,10 +563,13 @@
 		var todos = getTodosFromDOM();
 		apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/todos', {
 			method: 'PUT',
-			body: JSON.stringify(todos),
-		}).then(function () {
+			body: JSON.stringify({ data: todos, updated_at: currentUpdatedAt }),
+		}).then(function (res) {
+			currentUpdatedAt = res.updated_at;
 			showSaved();
-		}).catch(function () { /* silent */ });
+		}).catch(function (err) {
+			if (!handleConflict(err)) { /* silent */ }
+		});
 	}
 
 	// ── Import Todos ─────────────────────────────────
@@ -607,20 +634,27 @@
 
 			var p1 = apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/todos', {
 				method: 'PUT',
-				body: JSON.stringify(currentTodos),
+				body: JSON.stringify({ data: currentTodos, updated_at: currentUpdatedAt }),
 			});
 			var p2 = apiFetch(data.rest_url + '/entry/' + prevEntry.id + '/todos', {
 				method: 'PUT',
-				body: JSON.stringify(prevTodos),
+				body: JSON.stringify({ data: prevTodos, updated_at: prevEntry.updated_at }),
 			});
 
-			Promise.all([p1, p2]).then(function () {
+			Promise.all([p1, p2]).then(function (results) {
+				currentUpdatedAt = results[0].updated_at;
 				apiFetch(getEntryUrl(currentYear, currentMonth)).then(function (entry) {
 					currentEntry = entry;
+					currentUpdatedAt = entry.updated_at;
 					renderAll(entry);
 					showSaved();
 				});
-			}).catch(function () {
+			}).catch(function (err) {
+				if (err && err.status === 409) {
+					showNotice(data.i18n.conflict || 'This entry was updated on another device. Reloading...');
+					loadEntry(currentYear, currentMonth);
+					return;
+				}
 				showNotice('Failed to import todos.');
 			});
 		}).catch(function () {
@@ -706,10 +740,13 @@
 		var notes = getNotesFromDOM();
 		apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/notes', {
 			method: 'PUT',
-			body: JSON.stringify(notes),
-		}).then(function () {
+			body: JSON.stringify({ data: notes, updated_at: currentUpdatedAt }),
+		}).then(function (res) {
+			currentUpdatedAt = res.updated_at;
 			showSaved();
-		}).catch(function () { /* silent */ });
+		}).catch(function (err) {
+			if (!handleConflict(err)) { /* silent */ }
+		});
 	}
 
 	// ── Utility ──────────────────────────────────────
@@ -734,6 +771,13 @@
 	}
 
 	// ── Init ─────────────────────────────────────────
+	// Refresh entry when tab becomes visible again (only if stale > 10s).
+	document.addEventListener('visibilitychange', function () {
+		if (!document.hidden && currentEntry && Date.now() - lastLoadTime > 10000) {
+			loadEntry(currentYear, currentMonth);
+		}
+	});
+
 	// Check URL param for persisted month
 	var urlMonth = getURLMonth();
 	if (urlMonth) {

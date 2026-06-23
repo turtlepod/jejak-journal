@@ -85,6 +85,22 @@ class DB {
 	}
 
 	/**
+	 * Get the current updated_at timestamp for an entry.
+	 *
+	 * @param int $id Entry ID.
+	 * @return string|null
+	 */
+	public static function get_updated_at( $id ) {
+		global $wpdb;
+		return $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT updated_at FROM {$wpdb->prefix}jejak_journal_entries WHERE id = %d",
+				$id
+			)
+		);
+	}
+
+	/**
 	 * Create a new journal entry.
 	 *
 	 * @param int $user_id User ID.
@@ -122,60 +138,111 @@ class DB {
 	}
 
 	/**
-	 * Update highlights for an entry.
+	 * Update highlights for an entry — atomic with optimistic locking.
 	 *
-	 * @param int   $entry_id   Entry ID.
-	 * @param array $highlights Array of highlight items.
-	 * @return bool
+	 * @param int         $entry_id   Entry ID.
+	 * @param array       $highlights Array of highlight items.
+	 * @param string|null $updated_at Client's last-known updated_at for lock check.
+	 * @return int Rows affected (0 = conflict if updated_at was provided).
 	 */
-	public static function update_highlights( $entry_id, $highlights ) {
+	public static function update_highlights( $entry_id, $highlights, $updated_at = null ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'jejak_journal_entries';
-		return (bool) $wpdb->update(
-			$table,
-			array( 'highlights' => wp_json_encode( $highlights ) ),
-			array( 'id' => $entry_id ),
-			array( '%s' ),
-			array( '%d' )
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		if ( $updated_at ) {
+			$result = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$table} SET highlights = %s WHERE id = %d AND updated_at = %s",
+					wp_json_encode( $highlights ),
+					$entry_id,
+					$updated_at
+				)
+			);
+			return false === $result ? false : (int) $result;
+		}
+
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$table} SET highlights = %s WHERE id = %d",
+				wp_json_encode( $highlights ),
+				$entry_id
+			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return false === $result ? false : (int) $result;
 	}
 
 	/**
-	 * Update todos for an entry.
+	 * Update todos for an entry — atomic with optimistic locking.
 	 *
-	 * @param int   $entry_id Entry ID.
-	 * @param array $todos    Array of todo items.
-	 * @return bool
+	 * @param int         $entry_id   Entry ID.
+	 * @param array       $todos      Array of todo items.
+	 * @param string|null $updated_at Client's last-known updated_at for lock check.
+	 * @return int Rows affected (0 = conflict if updated_at was provided).
 	 */
-	public static function update_todos( $entry_id, $todos ) {
+	public static function update_todos( $entry_id, $todos, $updated_at = null ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'jejak_journal_entries';
-		return (bool) $wpdb->update(
-			$table,
-			array( 'todos' => wp_json_encode( $todos ) ),
-			array( 'id' => $entry_id ),
-			array( '%s' ),
-			array( '%d' )
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		if ( $updated_at ) {
+			$result = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$table} SET todos = %s WHERE id = %d AND updated_at = %s",
+					wp_json_encode( $todos ),
+					$entry_id,
+					$updated_at
+				)
+			);
+			return false === $result ? false : (int) $result;
+		}
+
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$table} SET todos = %s WHERE id = %d",
+				wp_json_encode( $todos ),
+				$entry_id
+			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return false === $result ? false : (int) $result;
 	}
 
 	/**
-	 * Update journal notes for an entry.
+	 * Update journal notes for an entry — atomic with optimistic locking.
 	 *
-	 * @param int   $entry_id      Entry ID.
-	 * @param array $journal_notes Array of journal day entries.
-	 * @return bool
+	 * @param int         $entry_id      Entry ID.
+	 * @param array       $journal_notes Array of journal day entries.
+	 * @param string|null $updated_at    Client's last-known updated_at for lock check.
+	 * @return int|false Rows affected, or false on SQL error.
 	 */
-	public static function update_journal_notes( $entry_id, $journal_notes ) {
+	public static function update_journal_notes( $entry_id, $journal_notes, $updated_at = null ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'jejak_journal_entries';
-		return (bool) $wpdb->update(
-			$table,
-			array( 'journal_notes' => wp_json_encode( $journal_notes ) ),
-			array( 'id' => $entry_id ),
-			array( '%s' ),
-			array( '%d' )
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		if ( $updated_at ) {
+			$result = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$table} SET journal_notes = %s WHERE id = %d AND updated_at = %s",
+					wp_json_encode( $journal_notes ),
+					$entry_id,
+					$updated_at
+				)
+			);
+			return false === $result ? false : (int) $result;
+		}
+
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$table} SET journal_notes = %s WHERE id = %d",
+				wp_json_encode( $journal_notes ),
+				$entry_id
+			)
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return false === $result ? false : (int) $result;
 	}
 
 	/**
