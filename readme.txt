@@ -1,5 +1,6 @@
 === Jejak Journal ===
 Contributors: turtlepod
+Donate link: https://pandaplugin.com/donate/
 Tags: journal, diary, private, notes
 Requires at least: 6.0
 Tested up to: 6.9
@@ -45,7 +46,35 @@ Features:
 | `/jejak-journal/v1/entry/{id}/todos` | PUT | Update todos |
 | `/jejak-journal/v1/entry/{id}/notes` | PUT | Update journal notes |
 
+== Upgrade Notice ==
+
+= 0.1.1-alpha =
+Maintenance update.
+
+== Screenshots ==
+
+1. Journal interface with highlights, todos, and daily notes.
+2. Settings – Settings → Jejak Journal in wp-admin.
+
+== Frequently Asked Questions ==
+
+= Where are the plugin settings? =
+
+Go to **Settings → Jejak Journal** in your WordPress admin. Configure allowed user roles, feature toggles, and PWA settings.
+
+= How do I use the plugin? =
+
+Add the `[jejak-journal]` shortcode to any page. Logged-in users can create monthly journal entries with highlights, to-dos, and daily notes. Changes auto-save — no save button needed.
+
+= Where can I find more documentation? =
+
+Visit [pandaplugin.com](https://pandaplugin.com) for the companion theme, setup guide, and more.
+
 == Changelog ==
+
+= 0.1.1-alpha =
+* Maintenance update
+* Updated plugin header with License URI
 
 = 0.1.0-alpha =
 * Initial release
