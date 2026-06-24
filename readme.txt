@@ -3,7 +3,7 @@ Contributors: turtlepod
 Donate link: https://pandaplugin.com/donate/
 Tags: journal, diary, private, notes
 Requires at least: 6.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 8.2
 Stable tag: 0.1.1-alpha
 License: GPLv2 or later
@@ -48,19 +48,18 @@ Features:
 
 == Upgrade Notice ==
 
-= 0.1.1-alpha =
 Maintenance update.
 
 == Screenshots ==
 
-1. Journal interface with highlights, todos, and daily notes.
-2. Settings – Settings → Jejak Journal in wp-admin.
+1. Settings.
+2. Screenshot.
 
 == Frequently Asked Questions ==
 
 = Where are the plugin settings? =
 
-Go to **Settings → Jejak Journal** in your WordPress admin. Configure allowed user roles, feature toggles, and PWA settings.
+Go to **Settings > Jejak Journal** in your WordPress admin. Configure allowed user roles, feature toggles, and PWA settings.
 
 = How do I use the plugin? =
 
