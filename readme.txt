@@ -38,13 +38,11 @@ Features:
 
 == REST API ==
 
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/jejak-journal/v1/entry/{year}/{month}` | GET | Get or create journal entry |
-| `/jejak-journal/v1/entry/{year}/{month}` | POST | Create journal entry |
-| `/jejak-journal/v1/entry/{id}/highlights` | PUT | Update highlights |
-| `/jejak-journal/v1/entry/{id}/todos` | PUT | Update todos |
-| `/jejak-journal/v1/entry/{id}/notes` | PUT | Update journal notes |
+`GET    /jejak-journal/v1/entry/{year}/{month}` — Get or create journal entry
+`POST   /jejak-journal/v1/entry/{year}/{month}` — Create journal entry
+`PUT    /jejak-journal/v1/entry/{id}/highlights` — Update highlights
+`PUT    /jejak-journal/v1/entry/{id}/todos` — Update todos
+`PUT    /jejak-journal/v1/entry/{id}/notes` — Update journal notes
 
 == Upgrade Notice ==
 
