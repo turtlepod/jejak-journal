@@ -36,14 +36,6 @@ Features:
 
 `[jejak-journal]` — Renders the full journal interface (highlights, todos, daily notes).
 
-== REST API ==
-
-`GET    /jejak-journal/v1/entry/{year}/{month}` — Get or create journal entry
-`POST   /jejak-journal/v1/entry/{year}/{month}` — Create journal entry
-`PUT    /jejak-journal/v1/entry/{id}/highlights` — Update highlights
-`PUT    /jejak-journal/v1/entry/{id}/todos` — Update todos
-`PUT    /jejak-journal/v1/entry/{id}/notes` — Update journal notes
-
 == Upgrade Notice ==
 
 Maintenance update.
