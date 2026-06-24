@@ -1,6 +1,6 @@
 {
   "name": "jejak-journal",
-  "version": "0.1.1-alpha",
+  "version": "1.1.0",
   "private": true,
   "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
   "license": "GPL-2.0-or-later",

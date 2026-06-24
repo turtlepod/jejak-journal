@@ -5,7 +5,7 @@ Tags: journal, diary, private, notes
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 0.1.1-alpha
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,7 +61,7 @@ Visit [pandaplugin.com](https://pandaplugin.com) for the companion theme, setup 
 
 == Changelog ==
 
-= 0.1.1-alpha =
+= 1.1.0 =
 * Maintenance update
 * Updated plugin header with License URI
 
