@@ -21,7 +21,7 @@
 	gap: 12px;
 	margin-bottom: 32px;
 	padding-bottom: 16px;
-	border-bottom: 2px solid #eee;
+	border-bottom: 2px solid #ddd;
 }
 
 .jejak-title {
@@ -31,13 +31,89 @@
 	line-height: 1.2;
 }
 
-.jejak-switcher {
+/* ── Navigation Buttons ────────────────────────── */
+.jejak-nav {
 	display: flex;
 	gap: 8px;
+	align-items: center;
 }
 
-.jejak-switcher select {
-	padding: 8px 12px;
+button.jejak-nav-btn {
+	padding: 8px 16px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-transform: none;
+	letter-spacing: normal;
+	color: #2c2c2c;
+	background: #fff;
+	cursor: pointer;
+	transition: background 0.2s, border-color 0.2s;
+}
+
+button.jejak-nav-btn:hover {
+	background: #f0f0f0;
+	border-color: #ddd;
+	color: #2c2c2c;
+}
+
+button.jejak-nav-btn:active {
+	background: #e0e0e0;
+}
+
+button.jejak-nav-btn:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+.jejak-nav-select {
+	font-weight: 500;
+	min-width: 130px;
+}
+
+/* ── Month Picker Modal ────────────────────────── */
+.jejak-month-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.jejak-month-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 50%);
+}
+
+.jejak-month-modal-content {
+	position: relative;
+	background: #fff;
+	border-radius: 12px;
+	padding: 28px 24px 24px;
+	width: 90%;
+	max-width: 360px;
+	box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
+}
+
+.jejak-month-modal-content h3 {
+	margin: 0 0 16px;
+	font-size: 16px;
+}
+
+.jejak-month-modal-fields {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.jejak-month-modal-fields select {
+	flex: 1;
+	padding: 10px 12px;
 	border: 1px solid #ddd;
 	border-radius: 6px;
 	font-size: 14px;
@@ -45,10 +121,26 @@
 	cursor: pointer;
 }
 
-.jejak-switcher select:focus {
+.jejak-month-modal-fields select:focus {
 	outline: none;
 	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+}
+
+#jejak-modal-go {
+	flex: 1;
+	padding: 10px;
+	font-size: 15px;
+}
+
+#jejak-modal-today {
+	padding: 10px 16px;
+	font-size: 15px;
+}
+
+.jejak-month-modal-actions {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 0;
 }
 
 /* ── Sections ──────────────────────────────────── */
@@ -57,55 +149,121 @@
 }
 
 .jejak-section-title {
-	font-size: 20px;
+	font-size: 14px;
 	font-weight: 600;
-	margin: 0 0 16px 0;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin: 0 0 16px;
 	padding-bottom: 8px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #ddd;
+}
+
+.jejak-section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #ddd;
+}
+
+.jejak-section-header .jejak-section-title {
+	margin: 0;
+	padding-bottom: 0;
+	border-bottom: none;
 }
 
 /* ── Buttons ───────────────────────────────────── */
-.jejak-btn {
+button.jejak-btn {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: 4px;
 	padding: 8px 16px;
-	border: none;
 	border-radius: 6px;
+	font-family: inherit;
 	font-size: 14px;
 	font-weight: 500;
+	line-height: 1.4;
+	text-transform: none;
+	letter-spacing: normal;
+	color: #2c2c2c;
+	background: #fff;
 	cursor: pointer;
-	transition: background 0.2s, box-shadow 0.2s;
+	transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
-.jejak-btn-primary {
+button.jejak-btn:hover {
+	background: #f0f0f0;
+	color: #2c2c2c;
+}
+
+button.jejak-btn:active {
+	background: #e0e0e0;
+}
+
+button.jejak-btn:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
+}
+
+button.jejak-btn-primary {
+	border: 1px solid #2271b1;
 	background: #2271b1;
 	color: #fff;
 }
 
-.jejak-btn-primary:hover {
+button.jejak-btn-primary:hover {
+	border-color: #135e96;
 	background: #135e96;
 }
 
-.jejak-btn-outline {
-	background: transparent;
+button.jejak-btn-primary:active {
+	border-color: #0e4f78;
+	background: #0e4f78;
+}
+
+button.jejak-btn-outline {
 	border: 1px solid #ddd;
+	background: #fff;
 	color: #555;
 }
 
-.jejak-btn-outline:hover {
-	background: #f5f5f5;
+button.jejak-btn-outline:hover {
 	border-color: #ccc;
+	background: #f5f5f5;
+}
+
+button.jejak-btn-outline:active {
+	border-color: #ddd;
+	background: #eee;
+}
+
+button.jejak-btn-danger {
+	border: 1px solid #e74c3c;
+	background: #e74c3c;
+	color: #fff;
+}
+
+button.jejak-btn-danger:hover {
+	border-color: #c0392b;
+	background: #c0392b;
+}
+
+button.jejak-btn-danger:active {
+	border-color: #a93226;
+	background: #a93226;
 }
 
 .jejak-add-btn {
 	margin-top: 12px;
 }
 
-.jejak-remove-btn {
+button.jejak-remove-btn {
 	background: none;
 	border: none;
 	color: #999;
+	font-family: inherit;
 	font-size: 20px;
 	line-height: 1;
 	cursor: pointer;
@@ -114,8 +272,19 @@
 	transition: color 0.2s;
 }
 
-.jejak-remove-btn:hover {
+button.jejak-remove-btn:hover {
+	background: transparent;
+	border-color: transparent;
 	color: #e74c3c;
+}
+
+button.jejak-remove-btn:active {
+	color: #c0392b;
+}
+
+button.jejak-remove-btn:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
 }
 
 /* ── Login Notice ──────────────────────────────── */
@@ -130,18 +299,36 @@
 	margin-bottom: 16px;
 }
 
-.jejak-login-btn {
+a.jejak-login-btn {
 	display: inline-block;
 	padding: 10px 24px;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-transform: none;
+	letter-spacing: normal;
 	background: #2271b1;
 	color: #fff;
 	text-decoration: none;
+	border: none;
 	border-radius: 6px;
-	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.2s;
 }
 
-.jejak-login-btn:hover {
+a.jejak-login-btn:hover {
 	background: #135e96;
+	color: #fff;
+}
+
+a.jejak-login-btn:active {
+	background: #0e4f78;
+}
+
+a.jejak-login-btn:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 2px;
 }
 
 /* ── No Entry ──────────────────────────────────── */
@@ -163,79 +350,79 @@
 	color: #999;
 }
 
-/* ── Highlights ────────────────────────────────── */
-.jejak-highlight-item {
+/* ── Shared Field Components ────────────────────── */
+.jejak-field-row {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 10px;
 	padding: 10px 0;
-	border-bottom: 1px solid #f5f5f5;
+	border-bottom: 1px solid #ddd;
 }
 
-.jejak-icon-picker-btn {
+.jejak-field-control {
+	width: 40px;
+	height: 40px;
 	background: #f0f0f0;
 	border: 1px solid #ddd;
 	border-radius: 8px;
-	width: 40px;
-	height: 40px;
-	font-size: 20px;
-	cursor: pointer;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: background 0.2s;
+	cursor: pointer;
+	transition: background 0.2s, border-color 0.2s;
 	flex-shrink: 0;
 }
 
-.jejak-icon-picker-btn:hover {
+.jejak-field-control:hover {
 	background: #e8e8e8;
 }
 
-.jejak-highlight-text {
+.jejak-field-textarea {
 	flex: 1;
 	padding: 8px 12px;
 	border: 1px solid #ddd;
 	border-radius: 6px;
-	font-size: 14px;
-	transition: border-color 0.2s;
-}
-
-.jejak-highlight-text:focus {
+	font-size: 18px;
+	font-family: inherit;
+	line-height: 1.5;
+	resize: none;
+	overflow: hidden;
+	min-height: 30px;
 	outline: none;
+	transition: border-color 0.2s;
+	background: linear-gradient(180deg, #f5f5f5 0%, #fff 100%);
+}
+
+.jejak-field-textarea:focus {
 	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+	box-shadow: 0 0 0 2px rgb(34 113 177 / 20%);
 }
 
-/* ── Icon Picker Modal ─────────────────────────── */
-.jejak-icon-modal {
-	position: fixed;
-	inset: 0;
-	z-index: 100000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+/* ── Highlights ────────────────────────────────── */
 
-.jejak-icon-modal-backdrop {
-	position: absolute;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
-}
+/* .jejak-highlight-item  — extends jejak-field-row */
 
-.jejak-icon-modal-content {
-	position: relative;
+/* .jejak-icon-picker-btn — extends jejak-field-control */
+
+/* .jejak-highlight-text  — extends jejak-field-textarea */
+
+.jejak-icon-picker-btn {
+	font-size: 20px;
+	padding: 5px;
 	background: #fff;
-	border-radius: 12px;
-	padding: 24px;
-	width: 90%;
+	border-radius: 6px;
+}
+
+/* ── Icon Picker ───────────────────────────────── */
+.jejak-icon-picker-dialog {
 	max-width: 420px;
 	max-height: 80vh;
 	overflow-y: auto;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+	text-align: left;
 }
 
-.jejak-icon-modal-content h3 {
-	margin: 0 0 12px 0;
+.jejak-icon-picker-dialog h3 {
+	margin: 0 0 12px;
 	font-size: 16px;
 }
 
@@ -261,9 +448,9 @@
 }
 
 .jejak-icon-option {
-	background: #f8f8f8;
-	border: 1px solid #eee;
-	border-radius: 8px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 6px;
 	padding: 8px;
 	font-size: 24px;
 	cursor: pointer;
@@ -287,24 +474,39 @@
 }
 
 .jejak-modal-close:hover {
+	background: none;
 	color: #333;
 }
 
 /* ── ToDos ─────────────────────────────────────── */
-.jejak-todo-item {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 10px 0;
-	border-bottom: 1px solid #f5f5f5;
+
+/* .jejak-todo-item       — extends jejak-field-row */
+
+/* .jejak-todo-custom-check — extends jejak-field-control */
+
+.jejak-todo-custom-check {
+	border-color: #ddd;
+	border-radius: 6px;
+	background: #e8e8e8;
 }
 
-.jejak-todo-label {
+.jejak-todo-custom-check::after {
+	content: "";
+	width: 8px;
+	height: 14px;
+	border: solid #ddd;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+	margin-top: -2px;
+}
+
+/* .jejak-todo-text       — extends jejak-field-textarea */
+
+.jejak-todo-row {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 10px;
 	flex: 1;
-	cursor: pointer;
 }
 
 .jejak-todo-checkbox {
@@ -314,18 +516,6 @@
 	height: 0;
 }
 
-.jejak-todo-custom-check {
-	width: 24px;
-	height: 24px;
-	border: 2px solid #ccc;
-	border-radius: 6px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.2s;
-	flex-shrink: 0;
-}
-
 .jejak-todo-checkbox:checked + .jejak-todo-custom-check {
 	background: #2271b1;
 	border-color: #2271b1;
@@ -333,112 +523,106 @@
 
 .jejak-todo-checkbox:checked + .jejak-todo-custom-check::after {
 	content: "";
-	width: 6px;
-	height: 10px;
+	width: 8px;
+	height: 14px;
 	border: solid #fff;
 	border-width: 0 2px 2px 0;
 	transform: rotate(45deg);
 	margin-top: -2px;
 }
 
-.jejak-todo-text {
-	flex: 1;
-	padding: 6px 10px;
-	border: 1px solid transparent;
+/* ── Journal Notes ─────────────────────────────── */
+
+/* .jejak-journal-item — extends jejak-field-row */
+
+.jejak-day-icon {
+	display: block;
 	border-radius: 6px;
-	font-size: 14px;
-	min-height: 24px;
-	outline: none;
-	transition: border-color 0.2s;
+	overflow: hidden;
+	background: #e8e8e8;
+	border-color: #ddd;
+	cursor: default;
 }
 
-.jejak-todo-text:focus {
-	border-color: #2271b1;
+.jejak-day-header {
+	display: block;
+	background: #2271b1;
+	color: #fff;
+	font-size: 7px;
+	font-weight: 700;
+	text-transform: uppercase;
+	text-align: center;
+	padding: 2px 0;
+	line-height: 1.2;
+	letter-spacing: 0.2px;
 }
 
-.jejak-todo-checkbox:checked ~ .jejak-todo-text {
-	text-decoration: line-through;
-	color: #999;
+.jejak-day-number {
+	display: block;
+	text-align: center;
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1;
+	padding: 3px 0 4px;
+	color: #2c2c2c;
 }
 
-/* ── Journal Table ─────────────────────────────── */
-.jejak-journal-table-wrap {
-	overflow-x: auto;
-	border: 1px solid #eee;
-	border-radius: 8px;
+/* Weekend day icon */
+.jejak-journal-item.is-weekend .jejak-day-header {
+	background: #d35400;
 }
 
-.jejak-journal-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 14px;
+/* .jejak-note-textarea — extends jejak-field-textarea */
+
+/* ── Overlay / Dialog (shared by all modals) ────── */
+.jejak-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.jejak-journal-table thead {
-	background: #f8f8f8;
+.jejak-overlay-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 50%);
 }
 
-.jejak-journal-table th {
-	padding: 10px 12px;
-	text-align: left;
-	font-weight: 600;
-	font-size: 13px;
-	color: #555;
-	border-bottom: 1px solid #eee;
+.jejak-dialog {
+	position: relative;
+	background: #fff;
+	border-radius: 12px;
+	padding: 28px 24px 20px;
+	width: 90%;
+	max-width: 340px;
+	box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
+	text-align: center;
 }
 
-.jejak-journal-table td {
-	padding: 8px 12px;
-	border-bottom: 1px solid #f5f5f5;
-	vertical-align: top;
+.jejak-dialog-text {
+	margin: 0 0 20px;
+	font-size: 15px;
+	color: #333;
 }
 
-.jejak-journal-table tr:last-child td {
-	border-bottom: none;
+.jejak-dialog-actions {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
 }
 
-.jejak-col-day {
-	width: 80px;
-	font-weight: 500;
-}
-
-.jejak-day-name {
-	font-size: 11px;
-	color: #999;
-	margin-left: 4px;
-}
-
-.jejak-col-date {
-	width: 110px;
-	color: #777;
-	font-size: 13px;
-}
-
-.jejak-note-textarea {
-	width: 100%;
-	padding: 8px 10px;
-	border: 1px solid #ddd;
-	border-radius: 6px;
-	font-size: 14px;
-	font-family: inherit;
-	line-height: 1.5;
-	resize: none;
-	min-height: 60px;
-	box-sizing: border-box;
-	transition: border-color 0.2s;
-}
-
-.jejak-note-textarea:focus {
-	outline: none;
-	border-color: #2271b1;
-	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.2);
+.jejak-dialog-actions button.jejak-btn {
+	min-width: 80px;
+	justify-content: center;
 }
 
 /* ── Save Toast ────────────────────────────────── */
 .jejak-saved-toast {
 	position: fixed;
 	bottom: 24px;
-	right: 24px;
+	left: 24px;
 	background: #2c2c2c;
 	color: #fff;
 	padding: 10px 20px;
@@ -458,21 +642,44 @@
 }
 
 /* ── Responsive ────────────────────────────────── */
-@media (max-width: 600px) {
+@media (width <= 600px) {
 	.jejak-journal-app {
 		padding: 16px;
 	}
+
 	.jejak-header {
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 	}
+
 	.jejak-title {
 		font-size: 22px;
 	}
+
 	.jejak-icon-grid {
 		grid-template-columns: repeat(4, 1fr);
 	}
-	.jejak-col-date {
-		display: none;
-	}
+}
+
+/* ── Small Button ──────────────────────────────── */
+button.jejak-btn-sm {
+	padding: 4px 12px;
+	font-size: 13px;
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+/* ── Imported To-Do Items ───────────────────────── */
+.jejak-todo-item.is-imported {
+	opacity: 0.6;
+}
+
+.jejak-todo-item.is-imported .jejak-todo-text {
+	text-decoration: line-through;
+	color: #999;
+	cursor: default;
+}
+
+.jejak-todo-item.is-imported .jejak-todo-checkbox {
+	cursor: not-allowed;
 }

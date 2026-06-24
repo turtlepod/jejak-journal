@@ -1,10 +1,11 @@
-node_modules/
+example-plugin/
 vendor/
+node_modules/
 dist/
 .phpunit.result.cache
+tests/e2e/.auth/
+tests/e2e/.test-pages.json
+tests/e2e/report/
+playwright-report/
 test-results/
-.DS_Store
-*.log
-wp-config.php
-wp-config-ddev.php
-.ddev/
+.hermes-tmp*

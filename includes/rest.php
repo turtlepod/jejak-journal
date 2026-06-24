@@ -25,8 +25,14 @@ function rest_register_routes() {
 			'callback'            => __NAMESPACE__ . '\\rest_get_entry',
 			'permission_callback' => __NAMESPACE__ . '\\rest_permission',
 			'args'                => array(
-				'year'  => array( 'required' => true, 'type' => 'integer' ),
-				'month' => array( 'required' => true, 'type' => 'integer' ),
+				'year'  => array(
+					'required' => true,
+					'type'     => 'integer',
+				),
+				'month' => array(
+					'required' => true,
+					'type'     => 'integer',
+				),
 			),
 		)
 	);
@@ -140,15 +146,42 @@ function rest_create_entry( $request ) {
  * @return \WP_REST_Response|\WP_Error
  */
 function rest_update_highlights( $request ) {
-	$entry_id   = (int) $request['id'];
-	$highlights = $request->get_json_params();
+	$entry_id = (int) $request['id'];
+	$body     = $request->get_json_params();
+
+	if ( ! is_array( $body ) || ! isset( $body['data'] ) ) {
+		return new \WP_Error( 'invalid_data', __( 'Invalid highlights data.', 'jejak-journal' ), array( 'status' => 400 ) );
+	}
+
+	$highlights = $body['data'];
+	$updated_at = $body['updated_at'] ?? null;
 
 	if ( ! is_array( $highlights ) ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid highlights data.', 'jejak-journal' ), array( 'status' => 400 ) );
 	}
 
-	DB::update_highlights( $entry_id, $highlights );
-	return rest_ensure_response( array( 'success' => true ) );
+	$affected = DB::update_highlights( $entry_id, $highlights, $updated_at );
+
+	if ( false === $affected ) {
+		return new \WP_Error( 'db_error', __( 'Database error.', 'jejak-journal' ), array( 'status' => 500 ) );
+	}
+
+	if ( $updated_at && 0 === $affected ) {
+		return new \WP_Error(
+			'conflict',
+			__( 'This entry was updated on another device. Please reload.', 'jejak-journal' ),
+			array( 'status' => 409 )
+		);
+	}
+
+	$new_updated_at = DB::get_updated_at( $entry_id );
+
+	return rest_ensure_response(
+		array(
+			'success'    => true,
+			'updated_at' => $new_updated_at,
+		)
+	);
 }
 
 /**
@@ -159,14 +192,41 @@ function rest_update_highlights( $request ) {
  */
 function rest_update_todos( $request ) {
 	$entry_id = (int) $request['id'];
-	$todos    = $request->get_json_params();
+	$body     = $request->get_json_params();
+
+	if ( ! is_array( $body ) || ! isset( $body['data'] ) ) {
+		return new \WP_Error( 'invalid_data', __( 'Invalid todos data.', 'jejak-journal' ), array( 'status' => 400 ) );
+	}
+
+	$todos      = $body['data'];
+	$updated_at = $body['updated_at'] ?? null;
 
 	if ( ! is_array( $todos ) ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid todos data.', 'jejak-journal' ), array( 'status' => 400 ) );
 	}
 
-	DB::update_todos( $entry_id, $todos );
-	return rest_ensure_response( array( 'success' => true ) );
+	$affected = DB::update_todos( $entry_id, $todos, $updated_at );
+
+	if ( false === $affected ) {
+		return new \WP_Error( 'db_error', __( 'Database error.', 'jejak-journal' ), array( 'status' => 500 ) );
+	}
+
+	if ( $updated_at && 0 === $affected ) {
+		return new \WP_Error(
+			'conflict',
+			__( 'This entry was updated on another device. Please reload.', 'jejak-journal' ),
+			array( 'status' => 409 )
+		);
+	}
+
+	$new_updated_at = DB::get_updated_at( $entry_id );
+
+	return rest_ensure_response(
+		array(
+			'success'    => true,
+			'updated_at' => $new_updated_at,
+		)
+	);
 }
 
 /**
@@ -177,12 +237,39 @@ function rest_update_todos( $request ) {
  */
 function rest_update_notes( $request ) {
 	$entry_id = (int) $request['id'];
-	$notes    = $request->get_json_params();
+	$body     = $request->get_json_params();
+
+	if ( ! is_array( $body ) || ! isset( $body['data'] ) ) {
+		return new \WP_Error( 'invalid_data', __( 'Invalid notes data.', 'jejak-journal' ), array( 'status' => 400 ) );
+	}
+
+	$notes      = $body['data'];
+	$updated_at = $body['updated_at'] ?? null;
 
 	if ( ! is_array( $notes ) ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid notes data.', 'jejak-journal' ), array( 'status' => 400 ) );
 	}
 
-	DB::update_journal_notes( $entry_id, $notes );
-	return rest_ensure_response( array( 'success' => true ) );
+	$affected = DB::update_journal_notes( $entry_id, $notes, $updated_at );
+
+	if ( false === $affected ) {
+		return new \WP_Error( 'db_error', __( 'Database error.', 'jejak-journal' ), array( 'status' => 500 ) );
+	}
+
+	if ( $updated_at && 0 === $affected ) {
+		return new \WP_Error(
+			'conflict',
+			__( 'This entry was updated on another device. Please reload.', 'jejak-journal' ),
+			array( 'status' => 409 )
+		);
+	}
+
+	$new_updated_at = DB::get_updated_at( $entry_id );
+
+	return rest_ensure_response(
+		array(
+			'success'    => true,
+			'updated_at' => $new_updated_at,
+		)
+	);
 }

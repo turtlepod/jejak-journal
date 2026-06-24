@@ -1,0 +1,6 @@
+/**
+ * Jejak Journal – frontend styles.
+ * Main entry point. Imports are processed by PostCSS.
+ */
+
+@import url("./front.css");
