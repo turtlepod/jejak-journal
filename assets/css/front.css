@@ -248,6 +248,7 @@ button.jejak-btn-danger {
 button.jejak-btn-danger:hover {
 	border-color: #c0392b;
 	background: #c0392b;
+	color: #fff;
 }
 
 button.jejak-btn-danger:active {
