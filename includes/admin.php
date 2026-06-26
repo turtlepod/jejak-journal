@@ -101,7 +101,7 @@ function admin_register_settings() {
 		array(
 			'type'              => 'string',
 			'default'           => implode( "\n", array_keys( get_default_icon_list() ) ),
-			'sanitize_callback' => __NAMESPACE__ . '\\\\sanitize_default_icons',
+			'sanitize_callback' => __NAMESPACE__ . '\sanitize_default_icons',
 		)
 	);
 }
