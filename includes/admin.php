@@ -94,6 +94,16 @@ function admin_register_settings() {
 			'sanitize_callback' => 'sanitize_text_field',
 		)
 	);
+
+	register_setting(
+		'jejak_journal_settings',
+		'jejak_journal_default_icons',
+		array(
+			'type'              => 'string',
+			'default'           => implode( "\n", array_keys( get_default_icon_list() ) ),
+			'sanitize_callback' => __NAMESPACE__ . '\\\\sanitize_default_icons',
+		)
+	);
 }
 
 /**
@@ -126,6 +136,44 @@ function sanitize_features( $input ) {
 }
 
 /**
+ * Sanitize default icons setting.
+ *
+ * Accepts newline-separated slugs or array.
+ *
+ * @param string|array|mixed $input Input slugs.
+ * @return string Newline-separated valid slugs.
+ */
+function sanitize_default_icons( $input ) {
+	$library = get_full_icon_library();
+	$default = implode( "\n", array_keys( get_default_icon_list() ) );
+
+	if ( is_array( $input ) ) {
+		$input = implode( "\n", $input );
+	}
+
+	if ( ! is_string( $input ) || '' === trim( $input ) ) {
+		return $default;
+	}
+
+	$lines = array_map( 'trim', explode( "\n", sanitize_textarea_field( $input ) ) );
+	$valid = array();
+	foreach ( $lines as $slug ) {
+		if ( '' === $slug ) {
+			continue;
+		}
+		if ( isset( $library[ $slug ] ) ) {
+			$valid[] = $slug;
+		}
+	}
+
+	if ( empty( $valid ) ) {
+		return $default;
+	}
+
+	return implode( "\n", array_slice( $valid, 0, 20 ) );
+}
+
+/**
  * Render settings page.
  */
 function admin_page_settings() {
@@ -154,6 +202,11 @@ function admin_page_settings() {
 		'todos'      => __( 'To-Dos', 'jejak-journal' ),
 		'journal'    => __( 'Journal', 'jejak-journal' ),
 	);
+
+	// Default icons.
+	$saved_icons_raw  = get_option( 'jejak_journal_default_icons', '' );
+	$current_icon_set = get_icon_list();
+	$full_library     = get_full_icon_library();
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Jejak Journal Settings', 'jejak-journal' ); ?></h1>
@@ -228,10 +281,49 @@ function admin_page_settings() {
 						</fieldset>
 						<p class="description">
 							<?php esc_html_e( 'Enable or disable journal sections. Disabled sections are hidden from the frontend.', 'jejak-journal' ); ?>
-						</p>
-					</td>
-				</tr>
-			</table>
+												</p>
+											</td>
+										</tr>
+										<tr>
+											<th scope="row"><?php esc_html_e( 'Default Icons', 'jejak-journal' ); ?></th>
+											<td>
+												<div class="jejak-admin-icon-preview" style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:420px;margin-bottom:12px;">
+													<?php foreach ( $current_icon_set as $slug => $emoji ) : ?>
+														<span style="font-size:22px;text-align:center;cursor:default;" title="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $emoji ); ?></span>
+													<?php endforeach; ?>
+												</div>
+
+												<textarea
+													name="jejak_journal_default_icons"
+													rows="6"
+													class="large-text code"
+													style="max-width:420px;font-family:monospace;"
+													placeholder="<?php esc_attr_e( 'One slug per line, e.g. star, red_heart', 'jejak-journal' ); ?>"
+												><?php echo esc_textarea( $saved_icons_raw ); ?></textarea>
+
+												<p class="description">
+													<?php esc_html_e( 'Enter icon slugs, one per line. Max 20. These are the default icons shown in the icon picker.', 'jejak-journal' ); ?>
+												</p>
+
+												<details style="margin-top:12px;max-width:580px;">
+													<summary style="cursor:pointer;font-weight:600;margin-bottom:8px;">
+														<?php esc_html_e( 'Browse Icon Library (1,914 icons)', 'jejak-journal' ); ?>
+													</summary>
+													<input type="text" class="jejak-admin-icon-search" placeholder="<?php esc_attr_e( 'Search by slug...', 'jejak-journal' ); ?>" style="width:100%;margin-bottom:8px;padding:6px 10px;border:1px solid #ddd;border-radius:4px;">
+													<div class="jejak-admin-library-grid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-height:400px;overflow-y:auto;">
+														<?php foreach ( $full_library as $slug => $emoji ) : ?>
+															<span
+																class="jejak-admin-lib-item"
+																data-slug="<?php echo esc_attr( $slug ); ?>"
+																title="<?php echo esc_attr( $slug ); ?>"
+																style="font-size:20px;text-align:center;cursor:pointer;padding:4px;border-radius:6px;border:1px solid transparent;transition:background 0.15s;"
+															><?php echo esc_html( $emoji ); ?></span>
+														<?php endforeach; ?>
+													</div>
+												</details>
+											</td>
+										</tr>
+									</table>
 			<?php submit_button(); ?>
 		</form>
 
@@ -291,8 +383,48 @@ function admin_page_settings() {
 				</tr>
 			</table>
 			<?php submit_button( __( 'Import JSON', 'jejak-journal' ), 'secondary', 'import_submit', false ); ?>
-		</form>
-	</div>
+			</form>
+
+			<script>
+			(function () {
+				var ta = document.querySelector('textarea[name="jejak_journal_default_icons"]');
+				var preview = document.querySelector('.jejak-admin-icon-preview');
+				var fullLib = <?php echo wp_json_encode( $full_library ); ?>;
+
+				// Click icon in library → append slug to textarea
+				document.querySelector('.jejak-admin-library-grid').addEventListener('click', function (e) {
+					var item = e.target.closest('.jejak-admin-lib-item');
+					if (!item) return;
+					var slug = item.dataset.slug;
+					if (!slug) return;
+					var lines = ta.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+					if (lines.length >= 20) return;
+					if (lines.indexOf(slug) !== -1) return;
+					lines.push(slug);
+					ta.value = lines.join('\n');
+					updatePreview(lines);
+				});
+
+				// Search in library
+				document.querySelector('.jejak-admin-icon-search').addEventListener('input', function () {
+					var q = this.value.toLowerCase();
+					document.querySelectorAll('.jejak-admin-lib-item').forEach(function (el) {
+						el.style.display = q && el.dataset.slug.indexOf(q) === -1 ? 'none' : '';
+					});
+				});
+
+				function updatePreview(lines) {
+					var html = '';
+					lines.forEach(function (slug) {
+						if (fullLib[slug]) {
+							html += '<span style="font-size:22px;text-align:center;cursor:default;" title="' + slug + '">' + fullLib[slug] + '</span>';
+						}
+					});
+					preview.innerHTML = html;
+				}
+			})();
+			</script>
+			</div>
 	<?php
 }
 

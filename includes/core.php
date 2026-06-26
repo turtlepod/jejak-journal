@@ -124,9 +124,34 @@ function enqueue_front_scripts() {
 /**
  * Get available icon list for highlights.
  *
+ * Uses saved settings if configured, otherwise the default 20.
+ *
  * @return array<string, string>
  */
 function get_icon_list() {
+	$saved = get_option( 'jejak_journal_default_icons', '' );
+	if ( $saved && is_string( $saved ) && '' !== trim( $saved ) ) {
+		$library = get_full_icon_library();
+		$slugs   = array_filter( array_map( 'trim', explode( "\n", $saved ) ) );
+		$icons   = array();
+		foreach ( $slugs as $slug ) {
+			if ( isset( $library[ $slug ] ) ) {
+				$icons[ $slug ] = $library[ $slug ];
+			}
+		}
+		if ( ! empty( $icons ) ) {
+			return $icons;
+		}
+	}
+	return get_default_icon_list();
+}
+
+/**
+ * Get the hardcoded default icon list (fallback).
+ *
+ * @return array<string, string>
+ */
+function get_default_icon_list() {
 	return array(
 		'star'              => '⭐',
 		'red_heart'         => '❤️',
