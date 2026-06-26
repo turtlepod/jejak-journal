@@ -463,6 +463,12 @@ a.jejak-login-btn:focus-visible {
 	transform: scale(1.1);
 }
 
+.jejak-icon-option--selected {
+	background: #2271b1;
+	color: #fff;
+	border-color: #2271b1;
+}
+
 .jejak-modal-close {
 	position: absolute;
 	top: 8px;

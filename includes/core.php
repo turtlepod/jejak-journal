@@ -16,6 +16,7 @@ require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/rest.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/shortcodes.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/admin.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/manifest.php';
+require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/icon-library.php';
 
 register_activation_hook( JEJAK_JOURNAL_PLUGIN_FILE, __NAMESPACE__ . '\\on_activation' );
 
@@ -115,6 +116,7 @@ function enqueue_front_scripts() {
 				'loading'        => __( 'Loading…', 'jejak-journal' ),
 			),
 			'icons'         => get_icon_list(),
+			'allIcons'      => get_full_icon_library(),
 		)
 	);
 }

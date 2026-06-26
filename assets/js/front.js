@@ -343,8 +343,9 @@
 	var defaultIconKey = 'star';
 
 	function getEmoji(key) {
+		var allIcons = data.allIcons || {};
 		var icons = data.icons || {};
-		return icons[key] || '\u2B50';
+		return allIcons[key] || icons[key] || '⭐';
 	}
 
 	function renderHighlights(items) {
@@ -438,17 +439,52 @@
 
 	// ── Icon Picker Modal ────────────────────────────
 	function openIconPicker(triggerBtn) {
-		var icons = data.icons || {};
-		var iconHtml = '';
-		Object.keys(icons).forEach(function (key) {
-			iconHtml += '<button type="button" class="jejak-icon-option" data-icon-key="' + key + '">' + icons[key] + '</button>';
-		});
+		var allIcons = data.allIcons || {};
+		var defaultIcons = data.icons || {};
+		var selectedKey = triggerBtn.dataset.iconKey || defaultIconKey;
+
+		function buildGrid(filterKey) {
+			var iconKeys = [];
+			var query = filterKey ? filterKey.toLowerCase().replace(/\s+/g, '_') : '';
+
+			if (query) {
+				// Search full library by word match
+				var words = query.split('_').filter(function (w) { return w.length > 0; });
+				Object.keys(allIcons).forEach(function (key) {
+					if (words.every(function (w) { return key.indexOf(w) !== -1; })) {
+						iconKeys.push(key);
+					}
+				});
+			} else {
+				// Default: the 20 predefined icons
+				iconKeys = Object.keys(defaultIcons);
+			}
+
+			// Include selected icon, dropping last to stay at 20
+			var hasSelected = iconKeys.indexOf(selectedKey) !== -1;
+			if (!hasSelected) {
+				iconKeys = iconKeys.slice(0, 19);
+				iconKeys.unshift(selectedKey);
+			} else {
+				iconKeys = iconKeys.slice(0, 20);
+			}
+
+			var html = '';
+			iconKeys.forEach(function (key) {
+				var isSelected = key === selectedKey;
+				html += '<button type="button" class="jejak-icon-option' + (isSelected ? ' jejak-icon-option--selected' : '') + '" data-icon-key="' + key + '">' +
+					(allIcons[key] || defaultIcons[key] || '⭐') + '</button>';
+			});
+			return html;
+		}
+
+		var iconHtml = buildGrid('');
 
 		var html =
 			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
 			'<div class="jejak-dialog jejak-icon-picker-dialog">' +
 				'<h3>' + (data.i18n.select_icon || 'Select icon') + '</h3>' +
-				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="' + (data.i18n.search_icon || 'Search icons...') + '">' +
+				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="' + (data.i18n.search_icon || 'Search icons…') + '">' +
 				'<div class="jejak-icon-grid">' + iconHtml + '</div>' +
 				'<button type="button" class="jejak-btn jejak-modal-close" data-action="dismiss-overlay">\u00D7</button>' +
 			'</div>';
@@ -472,13 +508,10 @@
 		});
 
 		var searchEl = overlay.querySelector('#jejak-icon-search');
+		var iconGrid = overlay.querySelector('.jejak-icon-grid');
 		if (searchEl) {
 			searchEl.addEventListener('input', function () {
-				var query = this.value.toLowerCase();
-				overlay.querySelectorAll('.jejak-icon-option').forEach(function (btn) {
-					var key = btn.dataset.iconKey || '';
-					btn.style.display = key.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
-				});
+				iconGrid.innerHTML = buildGrid(this.value);
 			});
 		}
 	}
