@@ -285,44 +285,48 @@ function admin_page_settings() {
 											</td>
 										</tr>
 										<tr>
-											<th scope="row"><?php esc_html_e( 'Default Icons', 'jejak-journal' ); ?></th>
-											<td>
-												<div class="jejak-admin-icon-preview" style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:420px;margin-bottom:12px;">
-													<?php foreach ( $current_icon_set as $slug => $emoji ) : ?>
-														<span style="font-size:22px;text-align:center;cursor:default;" title="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $emoji ); ?></span>
-													<?php endforeach; ?>
-												</div>
+														<th scope="row"><?php esc_html_e( 'Default Icons', 'jejak-journal' ); ?></th>
+														<td>
+															<div class="jejak-admin-icon-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:300px;margin-bottom:8px;">
+																<?php
+																$saved_slugs = array_keys( $current_icon_set );
+																foreach ( $saved_slugs as $idx => $slug ) :
+																	$emoji = isset( $current_icon_set[ $slug ] ) ? $current_icon_set[ $slug ] : '⭐';
+																	?>
+																	<button
+																		type="button"
+																		class="jejak-admin-icon-slot"
+																		data-index="<?php echo esc_attr( (string) $idx ); ?>"
+																		data-slug="<?php echo esc_attr( $slug ); ?>"
+																		style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:24px;cursor:pointer;transition:background 0.2s;"
+																		title="<?php echo esc_attr( $slug ); ?>"
+																	><?php echo esc_html( $emoji ); ?></button>
+																<?php endforeach; ?>
+															</div>
 
-												<textarea
-													name="jejak_journal_default_icons"
-													rows="6"
-													class="large-text code"
-													style="max-width:420px;font-family:monospace;"
-													placeholder="<?php esc_attr_e( 'One slug per line, e.g. star, red_heart', 'jejak-journal' ); ?>"
-												><?php echo esc_textarea( $saved_icons_raw ); ?></textarea>
+															<textarea
+																name="jejak_journal_default_icons"
+																id="jejak-journal-default-icons"
+																rows="1"
+																style="display:none;"
+																readonly
+															><?php echo esc_textarea( $saved_icons_raw ); ?></textarea>
 
-												<p class="description">
-													<?php esc_html_e( 'Enter icon slugs, one per line. Max 20. These are the default icons shown in the icon picker.', 'jejak-journal' ); ?>
-												</p>
+															<p class="description">
+																<?php esc_html_e( 'Click any icon to search and replace it from the full emoji library.', 'jejak-journal' ); ?>
+															</p>
 
-												<details style="margin-top:12px;max-width:580px;">
-													<summary style="cursor:pointer;font-weight:600;margin-bottom:8px;">
-														<?php esc_html_e( 'Browse Icon Library (1,914 icons)', 'jejak-journal' ); ?>
-													</summary>
-													<input type="text" class="jejak-admin-icon-search" placeholder="<?php esc_attr_e( 'Search by slug...', 'jejak-journal' ); ?>" style="width:100%;margin-bottom:8px;padding:6px 10px;border:1px solid #ddd;border-radius:4px;">
-													<div class="jejak-admin-library-grid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-height:400px;overflow-y:auto;">
-														<?php foreach ( $full_library as $slug => $emoji ) : ?>
-															<span
-																class="jejak-admin-lib-item"
-																data-slug="<?php echo esc_attr( $slug ); ?>"
-																title="<?php echo esc_attr( $slug ); ?>"
-																style="font-size:20px;text-align:center;cursor:pointer;padding:4px;border-radius:6px;border:1px solid transparent;transition:background 0.15s;"
-															><?php echo esc_html( $emoji ); ?></span>
-														<?php endforeach; ?>
-													</div>
-												</details>
-											</td>
-										</tr>
+															<!-- Search/Replace Modal -->
+															<div id="jejak-admin-icon-modal" style="display:none;position:fixed;inset:0;z-index:100001;align-items:center;justify-content:center;">
+																<div style="position:absolute;inset:0;background:rgb(0 0 0 / 50%);" onclick="document.getElementById('jejak-admin-icon-modal').style.display='none'"></div>
+																<div style="position:relative;background:#fff;border-radius:12px;padding:24px;width:90%;max-width:340px;box-shadow:0 8px 32px rgb(0 0 0 / 20%);">
+																	<h3 style="margin:0 0 12px;font-size:16px;"><?php esc_html_e( 'Search Icons', 'jejak-journal' ); ?></h3>
+																	<input type="text" id="jejak-admin-icon-search" placeholder="<?php esc_attr_e( 'Search by name...', 'jejak-journal' ); ?>" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+																	<div id="jejak-admin-icon-results" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:300px;overflow-y:auto;"></div>
+																</div>
+															</div>
+														</td>
+													</tr>
 									</table>
 			<?php submit_button(); ?>
 		</form>
@@ -386,44 +390,87 @@ function admin_page_settings() {
 			</form>
 
 			<script>
-			(function () {
-				var ta = document.querySelector('textarea[name="jejak_journal_default_icons"]');
-				var preview = document.querySelector('.jejak-admin-icon-preview');
-				var fullLib = <?php echo wp_json_encode( $full_library ); ?>;
+				(function () {
+					var ta = document.getElementById('jejak-journal-default-icons');
+					var fullLib = <?php echo wp_json_encode( $full_library ); ?>;
+					var modal = document.getElementById('jejak-admin-icon-modal');
+					var searchInput = document.getElementById('jejak-admin-icon-search');
+					var resultsEl = document.getElementById('jejak-admin-icon-results');
+					var activeSlot = null;
 
-				// Click icon in library → append slug to textarea
-				document.querySelector('.jejak-admin-library-grid').addEventListener('click', function (e) {
-					var item = e.target.closest('.jejak-admin-lib-item');
-					if (!item) return;
-					var slug = item.dataset.slug;
-					if (!slug) return;
-					var lines = ta.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
-					if (lines.length >= 20) return;
-					if (lines.indexOf(slug) !== -1) return;
-					lines.push(slug);
-					ta.value = lines.join('\n');
-					updatePreview(lines);
-				});
-
-				// Search in library
-				document.querySelector('.jejak-admin-icon-search').addEventListener('input', function () {
-					var q = this.value.toLowerCase();
-					document.querySelectorAll('.jejak-admin-lib-item').forEach(function (el) {
-						el.style.display = q && el.dataset.slug.indexOf(q) === -1 ? 'none' : '';
+					// Click a slot → open modal
+					document.querySelector('.jejak-admin-icon-grid').addEventListener('click', function (e) {
+						activeSlot = e.target.closest('.jejak-admin-icon-slot');
+						if (!activeSlot) return;
+						searchInput.value = activeSlot.dataset.slug.replace(/_/g, ' ');
+						modal.style.display = 'flex';
+						searchInput.focus();
+						doSearch(searchInput.value);
 					});
-				});
 
-				function updatePreview(lines) {
-					var html = '';
-					lines.forEach(function (slug) {
-						if (fullLib[slug]) {
-							html += '<span style="font-size:22px;text-align:center;cursor:default;" title="' + slug + '">' + fullLib[slug] + '</span>';
+					// Search input
+					searchInput.addEventListener('input', function () {
+						doSearch(this.value);
+					});
+
+					function doSearch(query) {
+						var q = query.toLowerCase().replace(/\s+/g, '_');
+						var words = q ? q.split('_').filter(function (w) { return w.length > 0; }) : [];
+						var results = [];
+
+						if (words.length === 0) {
+							// Show current 20 if empty query
+							var lines = ta.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+							lines.forEach(function (slug) {
+								if (fullLib[slug]) results.push(slug);
+							});
+						} else {
+							Object.keys(fullLib).forEach(function (slug) {
+								if (words.every(function (w) { return slug.indexOf(w) !== -1; })) {
+									results.push(slug);
+								}
+							});
 						}
+
+						var html = '';
+						results.slice(0, 20).forEach(function (slug) {
+							html += '<button type="button" class="jejak-admin-result-item" data-slug="' + slug + '" style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:24px;cursor:pointer;transition:background 0.2s;">' + fullLib[slug] + '</button>';
+						});
+						resultsEl.innerHTML = html || '<p style="grid-column:1/-1;text-align:center;color:#999;">No results</p>';
+					}
+
+					// Click a result → update slot
+					resultsEl.addEventListener('click', function (e) {
+						var btn = e.target.closest('.jejak-admin-result-item');
+						if (!btn) return;
+						var slug = btn.dataset.slug;
+						if (!slug || !activeSlot) return;
+
+						activeSlot.textContent = fullLib[slug];
+						activeSlot.dataset.slug = slug;
+						activeSlot.title = slug;
+						activeSlot.style.background = '#e8f0fe';
+						setTimeout(function () { activeSlot.style.background = '#fff'; }, 300);
+
+						syncTextarea();
+						modal.style.display = 'none';
+						activeSlot = null;
 					});
-					preview.innerHTML = html;
-				}
-			})();
-			</script>
+
+					// Close on backdrop
+					modal.addEventListener('click', function (e) {
+						if (e.target === modal) modal.style.display = 'none';
+					});
+
+					function syncTextarea() {
+						var slugs = [];
+						document.querySelectorAll('.jejak-admin-icon-slot').forEach(function (btn) {
+							slugs.push(btn.dataset.slug);
+						});
+						ta.value = slugs.join('\n');
+					}
+				})();
+				</script>
 			</div>
 	<?php
 }
