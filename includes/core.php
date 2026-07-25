@@ -16,6 +16,7 @@ require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/rest.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/shortcodes.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/admin.php';
 require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/manifest.php';
+require_once JEJAK_JOURNAL_PLUGIN_DIR . 'includes/icon-library.php';
 
 register_activation_hook( JEJAK_JOURNAL_PLUGIN_FILE, __NAMESPACE__ . '\\on_activation' );
 
@@ -115,6 +116,7 @@ function enqueue_front_scripts() {
 				'loading'        => __( 'Loading…', 'jejak-journal' ),
 			),
 			'icons'         => get_icon_list(),
+			'allIcons'      => get_full_icon_library(),
 		)
 	);
 }
@@ -122,29 +124,54 @@ function enqueue_front_scripts() {
 /**
  * Get available icon list for highlights.
  *
+ * Uses saved settings if configured, otherwise the default 20.
+ *
  * @return array<string, string>
  */
 function get_icon_list() {
+	$saved = get_option( 'jejak_journal_default_icons', '' );
+	if ( $saved && is_string( $saved ) && '' !== trim( $saved ) ) {
+		$library = get_full_icon_library();
+		$slugs   = array_filter( array_map( 'trim', explode( "\n", $saved ) ) );
+		$icons   = array();
+		foreach ( $slugs as $slug ) {
+			if ( isset( $library[ $slug ] ) ) {
+				$icons[ $slug ] = $library[ $slug ];
+			}
+		}
+		if ( ! empty( $icons ) ) {
+			return $icons;
+		}
+	}
+	return get_default_icon_list();
+}
+
+/**
+ * Get the hardcoded default icon list (fallback).
+ *
+ * @return array<string, string>
+ */
+function get_default_icon_list() {
 	return array(
-		'star'    => '⭐',
-		'heart'   => '❤️',
-		'dog'     => '🐕',
-		'fork'    => '🍴',
-		'car'     => '🚗',
-		'flower'  => '🌸',
-		'laptop'  => '💻',
-		'book'    => '📖',
-		'music'   => '🎵',
-		'sun'     => '☀️',
-		'moon'    => '🌙',
-		'fire'    => '🔥',
-		'rocket'  => '🚀',
-		'trophy'  => '🏆',
-		'bulb'    => '💡',
-		'gift'    => '🎁',
-		'check'   => '✅',
-		'sparkle' => '✨',
-		'rainbow' => '🌈',
-		'coffee'  => '☕',
+		'star'              => '⭐',
+		'red_heart'         => '❤️',
+		'dog'               => '🐕',
+		'fork_and_knife'    => '🍴',
+		'automobile'        => '🚗',
+		'cherry_blossom'    => '🌸',
+		'laptop'            => '💻',
+		'open_book'         => '📖',
+		'musical_note'      => '🎵',
+		'sun'               => '☀️',
+		'crescent_moon'     => '🌙',
+		'fire'              => '🔥',
+		'rocket'            => '🚀',
+		'trophy'            => '🏆',
+		'light_bulb'        => '💡',
+		'wrapped_gift'      => '🎁',
+		'check_mark_button' => '✅',
+		'sparkles'          => '✨',
+		'rainbow'           => '🌈',
+		'hot_beverage'      => '☕',
 	);
 }

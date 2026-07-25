@@ -38,6 +38,7 @@
 	var currentUpdatedAt = null;
 	var lastLoadTime  = 0;
 	var saveTimer     = null;
+	var saveQueue     = Promise.resolve();
 
 	var features = data.features || ['highlights', 'todos', 'journal'];
 	var realCurrentYear  = parseInt(data.current_year, 10) || new Date().getFullYear();
@@ -343,8 +344,9 @@
 	var defaultIconKey = 'star';
 
 	function getEmoji(key) {
+		var allIcons = data.allIcons || {};
 		var icons = data.icons || {};
-		return icons[key] || '\u2B50';
+		return allIcons[key] || icons[key] || '⭐';
 	}
 
 	function renderHighlights(items) {
@@ -364,6 +366,7 @@
 		div.className = 'jejak-field-row jejak-highlight-item';
 		div.dataset.index = index;
 		div.innerHTML =
+			'<button type="button" class="jejak-drag-handle" title="' + (data.i18n.drag_to_reorder || 'Drag to reorder') + '" draggable="true">\u2261</button>' +
 			'<button type="button" class="jejak-field-control jejak-icon-picker-btn" data-action="pick-icon" data-icon-key="' + iconKey + '" title="' + (data.i18n.select_icon || 'Select icon') + '">' +
 				emoji +
 			'</button>' +
@@ -393,7 +396,7 @@
 			if (action === 'remove') {
 				confirmDelete(item, function () {
 					item.remove();
-					saveHighlights();
+					enqueueSave(saveHighlights);
 				});
 			} else if (action === 'pick-icon') {
 				openIconPicker(btn);
@@ -408,12 +411,14 @@
 		});
 	}
 
-	var saveHighlightsDebounced = debounce(saveHighlights, 800);
+	var saveHighlightsDebounced = debounce(function () {
+		enqueueSave(saveHighlights);
+	}, 800);
 
 	function saveHighlights() {
-		if (!currentEntry) return;
+		if (!currentEntry) return Promise.resolve();
 		var highlights = getHighlightsFromDOM();
-		apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/highlights', {
+		return apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/highlights', {
 			method: 'PUT',
 			body: JSON.stringify({ data: highlights, updated_at: currentUpdatedAt }),
 		}).then(function (res) {
@@ -432,23 +437,58 @@
 			var ta = item.querySelector('.jejak-highlight-text');
 			ta.focus();
 			requestAnimationFrame(function () { autoResizeTextarea(ta); });
-			saveHighlights();
+			enqueueSave(saveHighlights);
 		});
 	}
 
 	// ── Icon Picker Modal ────────────────────────────
 	function openIconPicker(triggerBtn) {
-		var icons = data.icons || {};
-		var iconHtml = '';
-		Object.keys(icons).forEach(function (key) {
-			iconHtml += '<button type="button" class="jejak-icon-option" data-icon-key="' + key + '">' + icons[key] + '</button>';
-		});
+		var allIcons = data.allIcons || {};
+		var defaultIcons = data.icons || {};
+		var selectedKey = triggerBtn.dataset.iconKey || defaultIconKey;
+
+		function buildGrid(filterKey) {
+			var iconKeys = [];
+			var query = filterKey ? filterKey.toLowerCase().replace(/\s+/g, '_') : '';
+
+			if (query) {
+				// Search full library by word match
+				var words = query.split('_').filter(function (w) { return w.length > 0; });
+				Object.keys(allIcons).forEach(function (key) {
+					if (words.every(function (w) { return key.indexOf(w) !== -1; })) {
+						iconKeys.push(key);
+					}
+				});
+			} else {
+				// Default: the 20 predefined icons
+				iconKeys = Object.keys(defaultIcons);
+			}
+
+			// Include selected icon, dropping last to stay at 20
+			var hasSelected = iconKeys.indexOf(selectedKey) !== -1;
+			if (!hasSelected) {
+				iconKeys = iconKeys.slice(0, 19);
+				iconKeys.unshift(selectedKey);
+			} else {
+				iconKeys = iconKeys.slice(0, 20);
+			}
+
+			var html = '';
+			iconKeys.forEach(function (key) {
+				var isSelected = key === selectedKey;
+				html += '<button type="button" class="jejak-icon-option' + (isSelected ? ' jejak-icon-option--selected' : '') + '" data-icon-key="' + key + '">' +
+					(allIcons[key] || defaultIcons[key] || '⭐') + '</button>';
+			});
+			return html;
+		}
+
+		var iconHtml = buildGrid('');
 
 		var html =
 			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
 			'<div class="jejak-dialog jejak-icon-picker-dialog">' +
 				'<h3>' + (data.i18n.select_icon || 'Select icon') + '</h3>' +
-				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="' + (data.i18n.search_icon || 'Search icons...') + '">' +
+				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="' + (data.i18n.search_icon || 'Search icons…') + '">' +
 				'<div class="jejak-icon-grid">' + iconHtml + '</div>' +
 				'<button type="button" class="jejak-btn jejak-modal-close" data-action="dismiss-overlay">\u00D7</button>' +
 			'</div>';
@@ -462,7 +502,7 @@
 			triggerBtn.textContent = emoji;
 			triggerBtn.dataset.iconKey = key;
 			closeOverlay();
-			saveHighlights();
+			enqueueSave(saveHighlights);
 		});
 
 		overlay.addEventListener('click', function (e) {
@@ -472,13 +512,10 @@
 		});
 
 		var searchEl = overlay.querySelector('#jejak-icon-search');
+		var iconGrid = overlay.querySelector('.jejak-icon-grid');
 		if (searchEl) {
 			searchEl.addEventListener('input', function () {
-				var query = this.value.toLowerCase();
-				overlay.querySelectorAll('.jejak-icon-option').forEach(function (btn) {
-					var key = btn.dataset.iconKey || '';
-					btn.style.display = key.toLowerCase().indexOf(query) !== -1 ? '' : 'none';
-				});
+				iconGrid.innerHTML = buildGrid(this.value);
 			});
 		}
 	}
@@ -502,6 +539,7 @@
 		var disabled = item.imported ? ' disabled' : '';
 		var readonly = item.imported ? ' readonly' : '';
 		div.innerHTML =
+			'<button type="button" class="jejak-drag-handle" title="' + (data.i18n.drag_to_reorder || 'Drag to reorder') + '" draggable="true">\u2261</button>' +
 			'<div class="jejak-todo-row">' +
 				'<input type="checkbox" class="jejak-todo-checkbox"' + checked + disabled + '>' +
 				'<span class="jejak-field-control jejak-todo-custom-check" data-action="toggle-todo"></span>' +
@@ -532,7 +570,7 @@
 				var cb = row.querySelector('.jejak-todo-checkbox');
 				if (cb && !cb.disabled) {
 					cb.checked = !cb.checked;
-					saveTodos();
+					enqueueSave(saveTodos);
 				}
 				return;
 			}
@@ -543,7 +581,7 @@
 				var todoItem = btn.closest('.jejak-todo-item');
 				confirmDelete(todoItem, function () {
 					todoItem.remove();
-					saveTodos();
+					enqueueSave(saveTodos);
 				});
 			}
 		});
@@ -556,12 +594,14 @@
 		});
 	}
 
-	var saveTodosDebounced = debounce(saveTodos, 800);
+	var saveTodosDebounced = debounce(function () {
+		enqueueSave(saveTodos);
+	}, 800);
 
 	function saveTodos() {
-		if (!currentEntry) return;
+		if (!currentEntry) return Promise.resolve();
 		var todos = getTodosFromDOM();
-		apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/todos', {
+		return apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/todos', {
 			method: 'PUT',
 			body: JSON.stringify({ data: todos, updated_at: currentUpdatedAt }),
 		}).then(function (res) {
@@ -599,6 +639,10 @@
 	}
 
 	importTodosBtn.addEventListener('click', function () {
+		enqueueSave(doImport);
+	});
+
+	function doImport() {
 		var prevMonth = currentMonth - 1;
 		var prevYear = currentYear;
 		if (prevMonth < 1) {
@@ -606,7 +650,7 @@
 			prevYear--;
 		}
 
-		apiFetch(getEntryUrl(prevYear, prevMonth)).then(function (prevEntry) {
+		return apiFetch(getEntryUrl(prevYear, prevMonth)).then(function (prevEntry) {
 			var prevTodos = prevEntry.todos || [];
 			var toImport = prevTodos.filter(function (t) {
 				return !t.done && !t.imported;
@@ -641,7 +685,7 @@
 				body: JSON.stringify({ data: prevTodos, updated_at: prevEntry.updated_at }),
 			});
 
-			Promise.all([p1, p2]).then(function (results) {
+			return Promise.all([p1, p2]).then(function (results) {
 				currentUpdatedAt = results[0].updated_at;
 				apiFetch(getEntryUrl(currentYear, currentMonth)).then(function (entry) {
 					currentEntry = entry;
@@ -660,7 +704,7 @@
 		}).catch(function () {
 			showNotice('No previous month entry found.');
 		});
-	});
+	}
 
 	if (addTodo) {
 		addTodo.addEventListener('click', function () {
@@ -670,7 +714,7 @@
 			var ta = item.querySelector('.jejak-todo-text');
 			ta.focus();
 			requestAnimationFrame(function () { autoResizeTextarea(ta); });
-			saveTodos();
+			enqueueSave(saveTodos);
 		});
 	}
 
@@ -733,12 +777,14 @@
 		});
 	}
 
-	var saveNotesDebounced = debounce(saveNotes, 1000);
+	var saveNotesDebounced = debounce(function () {
+		enqueueSave(saveNotes);
+	}, 1000);
 
 	function saveNotes() {
-		if (!currentEntry) return;
+		if (!currentEntry) return Promise.resolve();
 		var notes = getNotesFromDOM();
-		apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/notes', {
+		return apiFetch(data.rest_url + '/entry/' + currentEntry.id + '/notes', {
 			method: 'PUT',
 			body: JSON.stringify({ data: notes, updated_at: currentUpdatedAt }),
 		}).then(function (res) {
@@ -746,6 +792,101 @@
 			showSaved();
 		}).catch(function (err) {
 			if (!handleConflict(err)) { /* silent */ }
+		});
+	}
+
+	// ── Drag and Drop Reordering ─────────────────────
+	function initDragAndDrop(container, saveFn, itemSelector) {
+		var draggedItem = null;
+
+		// ── Desktop (HTML5 DnD) ──────────────────────
+		container.addEventListener('dragstart', function (e) {
+			var handle = e.target.closest('.jejak-drag-handle');
+			if (!handle) return;
+			var item = handle.closest(itemSelector);
+			if (!item) return;
+			draggedItem = item;
+			item.classList.add('jejak-dragging');
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', '');
+		});
+
+		container.addEventListener('dragover', function (e) {
+			e.preventDefault();
+			var item = e.target.closest(itemSelector);
+			if (!item || item === draggedItem) return;
+			updateDragOver(item);
+		});
+
+		container.addEventListener('drop', function (e) {
+			e.preventDefault();
+			var target = e.target.closest(itemSelector);
+			if (!target || target === draggedItem || !draggedItem) return;
+			container.insertBefore(draggedItem, target);
+			cleanup();
+			saveFn();
+		});
+
+		container.addEventListener('dragend', cleanup);
+
+		// ── Touch (mobile) ────────────────────────────
+		container.addEventListener('touchstart', function (e) {
+			var handle = e.target.closest('.jejak-drag-handle');
+			if (!handle) return;
+			var item = handle.closest(itemSelector);
+			if (!item) return;
+			e.preventDefault();
+			draggedItem = item;
+			item.classList.add('jejak-dragging');
+		}, { passive: false });
+
+		container.addEventListener('touchmove', function (e) {
+			if (!draggedItem) return;
+			e.preventDefault();
+			var touch = e.touches[0];
+			var el = document.elementFromPoint(touch.clientX, touch.clientY);
+			if (!el) return;
+			var item = el.closest(itemSelector);
+			if (!item || item === draggedItem) return;
+			updateDragOver(item);
+		}, { passive: false });
+
+		container.addEventListener('touchend', function () {
+			if (!draggedItem) return;
+			var target = container.querySelector('.jejak-drag-over');
+			if (target && target !== draggedItem) {
+				container.insertBefore(draggedItem, target);
+				cleanup();
+				saveFn();
+			} else {
+				cleanup();
+			}
+		});
+
+		container.addEventListener('touchcancel', cleanup);
+
+		// ── Helpers ────────────────────────────────────
+		function updateDragOver(item) {
+			container.querySelectorAll('.jejak-drag-over').forEach(function (el) {
+				el.classList.remove('jejak-drag-over');
+			});
+			item.classList.add('jejak-drag-over');
+		}
+
+		function cleanup() {
+			container.querySelectorAll('.jejak-dragging, .jejak-drag-over').forEach(function (el) {
+				el.classList.remove('jejak-dragging', 'jejak-drag-over');
+			});
+			draggedItem = null;
+		}
+	}
+
+	// ── Save Queue (prevents concurrent API writes) ──
+	function enqueueSave(fn) {
+		saveQueue = saveQueue.then(function () {
+			return fn();
+		}).catch(function () {
+			// Queue continues even if one save fails (e.g., 409 handled by conflict handler).
 		});
 	}
 
@@ -771,6 +912,14 @@
 	}
 
 	// ── Init ─────────────────────────────────────────
+	// Wire up drag-and-drop reordering
+	if (highlightsList && hasFeature('highlights')) {
+		initDragAndDrop(highlightsList, function () { enqueueSave(saveHighlights); }, '.jejak-highlight-item');
+	}
+	if (todosList && hasFeature('todos')) {
+		initDragAndDrop(todosList, function () { enqueueSave(saveTodos); }, '.jejak-todo-item');
+	}
+
 	// Refresh entry when tab becomes visible again (only if stale > 10s).
 	document.addEventListener('visibilitychange', function () {
 		if (!document.hidden && currentEntry && Date.now() - lastLoadTime > 10000) {

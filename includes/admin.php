@@ -94,6 +94,16 @@ function admin_register_settings() {
 			'sanitize_callback' => 'sanitize_text_field',
 		)
 	);
+
+	register_setting(
+		'jejak_journal_settings',
+		'jejak_journal_default_icons',
+		array(
+			'type'              => 'string',
+			'default'           => implode( "\n", array_keys( get_default_icon_list() ) ),
+			'sanitize_callback' => __NAMESPACE__ . '\sanitize_default_icons',
+		)
+	);
 }
 
 /**
@@ -126,6 +136,44 @@ function sanitize_features( $input ) {
 }
 
 /**
+ * Sanitize default icons setting.
+ *
+ * Accepts newline-separated slugs or array.
+ *
+ * @param string|array|mixed $input Input slugs.
+ * @return string Newline-separated valid slugs.
+ */
+function sanitize_default_icons( $input ) {
+	$library = get_full_icon_library();
+	$default = implode( "\n", array_keys( get_default_icon_list() ) );
+
+	if ( is_array( $input ) ) {
+		$input = implode( "\n", $input );
+	}
+
+	if ( ! is_string( $input ) || '' === trim( $input ) ) {
+		return $default;
+	}
+
+	$lines = array_map( 'trim', explode( "\n", sanitize_textarea_field( $input ) ) );
+	$valid = array();
+	foreach ( $lines as $slug ) {
+		if ( '' === $slug ) {
+			continue;
+		}
+		if ( isset( $library[ $slug ] ) ) {
+			$valid[] = $slug;
+		}
+	}
+
+	if ( empty( $valid ) ) {
+		return $default;
+	}
+
+	return implode( "\n", array_slice( $valid, 0, 20 ) );
+}
+
+/**
  * Render settings page.
  */
 function admin_page_settings() {
@@ -154,6 +202,11 @@ function admin_page_settings() {
 		'todos'      => __( 'To-Dos', 'jejak-journal' ),
 		'journal'    => __( 'Journal', 'jejak-journal' ),
 	);
+
+	// Default icons.
+	$saved_icons_raw  = get_option( 'jejak_journal_default_icons', '' );
+	$current_icon_set = get_icon_list();
+	$full_library     = get_full_icon_library();
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Jejak Journal Settings', 'jejak-journal' ); ?></h1>
@@ -228,10 +281,53 @@ function admin_page_settings() {
 						</fieldset>
 						<p class="description">
 							<?php esc_html_e( 'Enable or disable journal sections. Disabled sections are hidden from the frontend.', 'jejak-journal' ); ?>
-						</p>
-					</td>
-				</tr>
-			</table>
+												</p>
+											</td>
+										</tr>
+										<tr>
+														<th scope="row"><?php esc_html_e( 'Default Icons', 'jejak-journal' ); ?></th>
+														<td>
+															<div class="jejak-admin-icon-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:300px;margin-bottom:8px;">
+																<?php
+																$saved_slugs = array_keys( $current_icon_set );
+																foreach ( $saved_slugs as $idx => $slug ) :
+																	$emoji = isset( $current_icon_set[ $slug ] ) ? $current_icon_set[ $slug ] : '⭐';
+																	?>
+																	<button
+																		type="button"
+																		class="jejak-admin-icon-slot"
+																		data-index="<?php echo esc_attr( (string) $idx ); ?>"
+																		data-slug="<?php echo esc_attr( $slug ); ?>"
+																		style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:24px;cursor:pointer;transition:background 0.2s;"
+																		title="<?php echo esc_attr( $slug ); ?>"
+																	><?php echo esc_html( $emoji ); ?></button>
+																<?php endforeach; ?>
+															</div>
+
+															<textarea
+																name="jejak_journal_default_icons"
+																id="jejak-journal-default-icons"
+																rows="1"
+																style="display:none;"
+																readonly
+															><?php echo esc_textarea( $saved_icons_raw ); ?></textarea>
+
+															<p class="description">
+																<?php esc_html_e( 'Click any icon to search and replace it from the full emoji library.', 'jejak-journal' ); ?>
+															</p>
+
+															<!-- Search/Replace Modal -->
+															<div id="jejak-admin-icon-modal" style="display:none;position:fixed;inset:0;z-index:100001;align-items:center;justify-content:center;">
+																<div style="position:absolute;inset:0;background:rgb(0 0 0 / 50%);" onclick="document.getElementById('jejak-admin-icon-modal').style.display='none'"></div>
+																<div style="position:relative;background:#fff;border-radius:12px;padding:24px;width:90%;max-width:340px;box-shadow:0 8px 32px rgb(0 0 0 / 20%);">
+																	<h3 style="margin:0 0 12px;font-size:16px;"><?php esc_html_e( 'Search Icons', 'jejak-journal' ); ?></h3>
+																	<input type="text" id="jejak-admin-icon-search" placeholder="<?php esc_attr_e( 'Search by name...', 'jejak-journal' ); ?>" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+																	<div id="jejak-admin-icon-results" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:300px;overflow-y:auto;"></div>
+																</div>
+															</div>
+														</td>
+													</tr>
+									</table>
 			<?php submit_button(); ?>
 		</form>
 
@@ -291,8 +387,91 @@ function admin_page_settings() {
 				</tr>
 			</table>
 			<?php submit_button( __( 'Import JSON', 'jejak-journal' ), 'secondary', 'import_submit', false ); ?>
-		</form>
-	</div>
+			</form>
+
+			<script>
+				(function () {
+					var ta = document.getElementById('jejak-journal-default-icons');
+					var fullLib = <?php echo wp_json_encode( $full_library ); ?>;
+					var modal = document.getElementById('jejak-admin-icon-modal');
+					var searchInput = document.getElementById('jejak-admin-icon-search');
+					var resultsEl = document.getElementById('jejak-admin-icon-results');
+					var activeSlot = null;
+
+					// Click a slot → open modal
+					document.querySelector('.jejak-admin-icon-grid').addEventListener('click', function (e) {
+						activeSlot = e.target.closest('.jejak-admin-icon-slot');
+						if (!activeSlot) return;
+						searchInput.value = activeSlot.dataset.slug.replace(/_/g, ' ');
+						modal.style.display = 'flex';
+						searchInput.focus();
+						doSearch(searchInput.value);
+					});
+
+					// Search input
+					searchInput.addEventListener('input', function () {
+						doSearch(this.value);
+					});
+
+					function doSearch(query) {
+						var q = query.toLowerCase().replace(/\s+/g, '_');
+						var words = q ? q.split('_').filter(function (w) { return w.length > 0; }) : [];
+						var results = [];
+
+						if (words.length === 0) {
+							// Show current 20 if empty query
+							var lines = ta.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+							lines.forEach(function (slug) {
+								if (fullLib[slug]) results.push(slug);
+							});
+						} else {
+							Object.keys(fullLib).forEach(function (slug) {
+								if (words.every(function (w) { return slug.indexOf(w) !== -1; })) {
+									results.push(slug);
+								}
+							});
+						}
+
+						var html = '';
+						results.slice(0, 20).forEach(function (slug) {
+							html += '<button type="button" class="jejak-admin-result-item" data-slug="' + slug + '" style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:24px;cursor:pointer;transition:background 0.2s;">' + fullLib[slug] + '</button>';
+						});
+						resultsEl.innerHTML = html || '<p style="grid-column:1/-1;text-align:center;color:#999;">No results</p>';
+					}
+
+					// Click a result → update slot
+					resultsEl.addEventListener('click', function (e) {
+						var btn = e.target.closest('.jejak-admin-result-item');
+						if (!btn) return;
+						var slug = btn.dataset.slug;
+						if (!slug || !activeSlot) return;
+
+						activeSlot.textContent = fullLib[slug];
+						activeSlot.dataset.slug = slug;
+						activeSlot.title = slug;
+						activeSlot.style.background = '#e8f0fe';
+						setTimeout(function () { activeSlot.style.background = '#fff'; }, 300);
+
+						syncTextarea();
+						modal.style.display = 'none';
+						activeSlot = null;
+					});
+
+					// Close on backdrop
+					modal.addEventListener('click', function (e) {
+						if (e.target === modal) modal.style.display = 'none';
+					});
+
+					function syncTextarea() {
+						var slugs = [];
+						document.querySelectorAll('.jejak-admin-icon-slot').forEach(function (btn) {
+							slugs.push(btn.dataset.slug);
+						});
+						ta.value = slugs.join('\n');
+					}
+				})();
+				</script>
+			</div>
 	<?php
 }
 
