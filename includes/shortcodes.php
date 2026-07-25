@@ -29,7 +29,14 @@ function shortcodes_setup() {
  */
 function shortcode_render_journal( $atts ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 	if ( ! is_user_logged_in() ) {
-		$login_url = wp_login_url( get_permalink() );
+		$redirect_url = get_permalink();
+		if ( ! empty( $_GET['redirect_to'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$redirect_url = wp_validate_redirect(
+				esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				get_permalink()
+			);
+		}
+		$login_url = wp_login_url( $redirect_url );
 		return sprintf(
 			'<div class="jejak-login-notice"><p>%s</p><a class="jejak-login-btn" href="%s">%s</a></div>',
 			esc_html__( 'Please log in to access your journal.', 'jejak-journal' ),
