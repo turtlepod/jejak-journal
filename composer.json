@@ -2,7 +2,7 @@
 	"name": "turtlepod/jejak-journal",
 	"description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
 	"type": "wordpress-plugin",
-	"license": "GPL-2.0-or-later",
+	"license": "GPL-3.0-or-later",
 	"require-dev": {
 		"10up/phpcs-composer": "^3.0",
 		"phpunit/phpunit": "^9.6",

@@ -1,9 +1,9 @@
 {
   "name": "jejak-journal",
-  "version": "1.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Private monthly journal WordPress plugin with highlights, todos, and notes.",
-  "license": "GPL-2.0-or-later",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@10up/babel-preset-default": "^2.1.2",
     "@playwright/test": "^1.58.2",
@@ -32,7 +32,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "zip": "npm run build && composer run test && version=$(node -p \"require('./package.json').version\") && cd .. && zip -r jejak-journal.$version.zip jejak-journal -x '*/.?*' -x '*node_modules*' -x '*/vendor/*' -x '*/test-results/*' -x '*/tests/e2e/report/*' -x '*/playwright-report/*'",
-    "postversion": "sed -i \"s/^* Version: .*/ * Version: $npm_package_version/\" jejak-journal.php && sed -i \"s/define( 'JEJAK_JOURNAL_VERSION', '[^']*' )/define( 'JEJAK_JOURNAL_VERSION', '$npm_package_version' )/\" jejak-journal.php && sed -i \"s/^Stable tag: .*/Stable tag: $npm_package_version/\" readme.txt",
+    "postversion": "sed -i '' \"s/^\\* Version: .*/ * Version: $npm_package_version/\" jejak-journal.php && sed -i '' \"s/define( 'JEJAK_JOURNAL_VERSION', '[^']*' )/define( 'JEJAK_JOURNAL_VERSION', '$npm_package_version' )/\" jejak-journal.php && sed -i '' \"s/^Stable tag: .*/Stable tag: $npm_package_version/\" readme.txt",
     "clean-dist": "rm -rf ./dist"
   },
   "10up-toolkit": {
@@ -48,7 +48,6 @@
     "assets/js/*.js": [
       "eslint --fix"
     ],
-    
     "assets/css/**/*.css": [
       "stylelint --fix"
     ]

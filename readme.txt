@@ -6,8 +6,8 @@ Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.2
 Stable tag: 0.2.0
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 A private monthly journal WordPress plugin with highlights, todos, and daily notes.
 
