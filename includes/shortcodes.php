@@ -29,7 +29,29 @@ function shortcodes_setup() {
  */
 function shortcode_render_journal( $atts ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 	if ( ! is_user_logged_in() ) {
-		$login_url = wp_login_url( get_permalink() );
+		$login_redirect_url = get_permalink();
+		if ( ! empty( $_GET['redirect_to'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$login_redirect_url = wp_validate_redirect(
+				esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				get_permalink()
+			);
+		}
+		$login_url = wp_login_url( $login_redirect_url );
+
+		// Use the theme login-prompt partial if the companion theme is active.
+		$partial = get_template_directory() . '/templates/partials/login-prompt.php';
+		if ( function_exists( 'JejakTheme\\get_account_page_url' ) && file_exists( $partial ) ) {
+			$heading = __( 'Jejak Journal', 'jejak-journal' );
+			$desc    = __( 'Please log in to access your journal.', 'jejak-journal' );
+			ob_start();
+			require $partial;
+			return ob_get_clean();
+		}
+
+		$account_page_url = function_exists( 'JejakTheme\\get_account_page_url' ) ? \JejakTheme\get_account_page_url() : '';
+		if ( $account_page_url ) {
+			$login_url = add_query_arg( 'redirect_to', $login_redirect_url, $account_page_url );
+		}
 		return sprintf(
 			'<div class="jejak-login-notice"><p>%s</p><a class="jejak-login-btn" href="%s">%s</a></div>',
 			esc_html__( 'Please log in to access your journal.', 'jejak-journal' ),

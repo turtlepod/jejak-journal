@@ -419,13 +419,16 @@ a.jejak-login-btn:focus-visible {
 	touch-action: none;
 }
 
-.jejak-drag-handle:hover {
+.jejak-drag-handle:hover,
+.jejak-drag-handle:focus {
 	color: #999;
+	background: transparent;
 }
 
 .jejak-drag-handle:active {
 	cursor: grabbing;
 	color: #666;
+	background: transparent;
 }
 
 /* Dragging state */
