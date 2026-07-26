@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$months = array(
+$jejak_months = array(
 	1  => __( 'January', 'jejak-journal' ),
 	2  => __( 'February', 'jejak-journal' ),
 	3  => __( 'March', 'jejak-journal' ),
@@ -28,11 +28,11 @@ $months = array(
 	12 => __( 'December', 'jejak-journal' ),
 );
 
-$month_name     = $months[ $current_month ] ?? '';
-$journal_title  = sprintf( '%s %d', $month_name, $current_year );
-$has_highlights = in_array( 'highlights', $enabled_features, true );
-$has_todos      = in_array( 'todos', $enabled_features, true );
-$has_journal    = in_array( 'journal', $enabled_features, true );
+$jejak_month_name     = $jejak_months[ $current_month ] ?? '';
+$jejak_journal_title  = sprintf( '%s %d', $jejak_month_name, $current_year );
+$jejak_has_highlights = in_array( 'highlights', $enabled_features, true );
+$jejak_has_todos      = in_array( 'todos', $enabled_features, true );
+$jejak_has_journal    = in_array( 'journal', $enabled_features, true );
 ?>
 
 <div class="jejak-journal-app" id="jejak-journal-app"
@@ -42,7 +42,7 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 
 	<!-- Header: Title + Navigation -->
 	<div class="jejak-header">
-		<h1 class="jejak-title"><?php echo esc_html( $journal_title ); ?></h1>
+		<h1 class="jejak-title"><?php echo esc_html( $jejak_journal_title ); ?></h1>
 		<div class="jejak-nav">
 			<button type="button" class="jejak-nav-btn" id="jejak-prev-month" title="<?php esc_attr_e( 'Previous month', 'jejak-journal' ); ?>">&larr;</button>
 			<button type="button" class="jejak-nav-btn jejak-nav-select" id="jejak-select-month">
@@ -61,8 +61,8 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 				<select id="jejak-modal-year" aria-label="<?php esc_attr_e( 'Year', 'jejak-journal' ); ?>">
 				</select>
 				<select id="jejak-modal-month" aria-label="<?php esc_attr_e( 'Month', 'jejak-journal' ); ?>">
-					<?php foreach ( $months as $m_num => $m_name ) : ?>
-						<option value="<?php echo esc_attr( (string) $m_num ); ?>"><?php echo esc_html( $m_name ); ?></option>
+					<?php foreach ( $jejak_months as $jejak_m_num => $jejak_m_name ) : ?>
+						<option value="<?php echo esc_attr( (string) $jejak_m_num ); ?>"><?php echo esc_html( $jejak_m_name ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</div>
@@ -94,7 +94,7 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 	<!-- Sections (hidden by default, shown after load) -->
 	<div class="jejak-sections" id="jejak-sections" style="display:none;">
 
-		<?php if ( $has_highlights ) : ?>
+		<?php if ( $jejak_has_highlights ) : ?>
 		<!-- Highlights Section -->
 		<section class="jejak-section jejak-highlights" id="jejak-highlights-section">
 			<h2 class="jejak-section-title"><?php esc_html_e( 'Highlights', 'jejak-journal' ); ?></h2>
@@ -105,7 +105,7 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 		</section>
 		<?php endif; ?>
 
-		<?php if ( $has_todos ) : ?>
+		<?php if ( $jejak_has_todos ) : ?>
 		<!-- ToDos Section -->
 		<section class="jejak-section jejak-todos" id="jejak-todos-section">
 			<div class="jejak-section-header">
@@ -121,7 +121,7 @@ $has_journal    = in_array( 'journal', $enabled_features, true );
 		</section>
 		<?php endif; ?>
 
-		<?php if ( $has_journal ) : ?>
+		<?php if ( $jejak_has_journal ) : ?>
 		<!-- Journal Section -->
 		<section class="jejak-section jejak-journal-notes" id="jejak-journal-section">
 			<h2 class="jejak-section-title"><?php esc_html_e( 'Journal', 'jejak-journal' ); ?></h2>

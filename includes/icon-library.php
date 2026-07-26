@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @return array<string, string>
  */
-function get_full_icon_library() {
+function jejak_journal_get_full_icon_library() {
 	return array(
 		'1st_place_medal'                             => '🥇',
 		'2nd_place_medal'                             => '🥈',

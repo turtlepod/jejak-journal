@@ -35,7 +35,6 @@ function on_activation() {
  * Fires on plugins_loaded.
  */
 function on_plugins_loaded() {
-	load_plugin_textdomain( 'jejak-journal', false, dirname( plugin_basename( JEJAK_JOURNAL_PLUGIN_FILE ) ) . '/languages' );
 	add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\enqueue_front_scripts' );
 	manifest_setup();
 }
@@ -116,7 +115,7 @@ function enqueue_front_scripts() {
 				'loading'        => __( 'Loading…', 'jejak-journal' ),
 			),
 			'icons'         => get_icon_list(),
-			'allIcons'      => get_full_icon_library(),
+			'allIcons'      => jejak_journal_get_full_icon_library(),
 		)
 	);
 }
@@ -131,7 +130,7 @@ function enqueue_front_scripts() {
 function get_icon_list() {
 	$saved = get_option( 'jejak_journal_default_icons', '' );
 	if ( $saved && is_string( $saved ) && '' !== trim( $saved ) ) {
-		$library = get_full_icon_library();
+		$library = jejak_journal_get_full_icon_library();
 		$slugs   = array_filter( array_map( 'trim', explode( "\n", $saved ) ) );
 		$icons   = array();
 		foreach ( $slugs as $slug ) {

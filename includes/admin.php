@@ -144,7 +144,7 @@ function sanitize_features( $input ) {
  * @return string Newline-separated valid slugs.
  */
 function sanitize_default_icons( $input ) {
-	$library = get_full_icon_library();
+	$library = jejak_journal_get_full_icon_library();
 	$default = implode( "\n", array_keys( get_default_icon_list() ) );
 
 	if ( is_array( $input ) ) {
@@ -206,7 +206,7 @@ function admin_page_settings() {
 	// Default icons.
 	$saved_icons_raw  = get_option( 'jejak_journal_default_icons', '' );
 	$current_icon_set = get_icon_list();
-	$full_library     = get_full_icon_library();
+	$full_library     = jejak_journal_get_full_icon_library();
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Jejak Journal Settings', 'jejak-journal' ); ?></h1>
