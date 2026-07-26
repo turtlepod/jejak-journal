@@ -149,13 +149,12 @@ class DB {
 	 */
 	public static function update_highlights( $entry_id, $highlights, $updated_at = null ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'jejak_journal_entries';
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( $updated_at ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$table} SET highlights = %s WHERE id = %d AND updated_at = %s",
+					"UPDATE {$wpdb->prefix}jejak_journal_entries SET highlights = %s WHERE id = %d AND updated_at = %s",
 					wp_json_encode( $highlights ),
 					$entry_id,
 					$updated_at
@@ -166,7 +165,7 @@ class DB {
 
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$table} SET highlights = %s WHERE id = %d",
+				"UPDATE {$wpdb->prefix}jejak_journal_entries SET highlights = %s WHERE id = %d",
 				wp_json_encode( $highlights ),
 				$entry_id
 			)
@@ -185,13 +184,12 @@ class DB {
 	 */
 	public static function update_todos( $entry_id, $todos, $updated_at = null ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'jejak_journal_entries';
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( $updated_at ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$table} SET todos = %s WHERE id = %d AND updated_at = %s",
+					"UPDATE {$wpdb->prefix}jejak_journal_entries SET todos = %s WHERE id = %d AND updated_at = %s",
 					wp_json_encode( $todos ),
 					$entry_id,
 					$updated_at
@@ -202,7 +200,7 @@ class DB {
 
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$table} SET todos = %s WHERE id = %d",
+				"UPDATE {$wpdb->prefix}jejak_journal_entries SET todos = %s WHERE id = %d",
 				wp_json_encode( $todos ),
 				$entry_id
 			)
@@ -221,13 +219,12 @@ class DB {
 	 */
 	public static function update_journal_notes( $entry_id, $journal_notes, $updated_at = null ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'jejak_journal_entries';
 
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		if ( $updated_at ) {
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$table} SET journal_notes = %s WHERE id = %d AND updated_at = %s",
+					"UPDATE {$wpdb->prefix}jejak_journal_entries SET journal_notes = %s WHERE id = %d AND updated_at = %s",
 					wp_json_encode( $journal_notes ),
 					$entry_id,
 					$updated_at
@@ -238,7 +235,7 @@ class DB {
 
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$table} SET journal_notes = %s WHERE id = %d",
+				"UPDATE {$wpdb->prefix}jejak_journal_entries SET journal_notes = %s WHERE id = %d",
 				wp_json_encode( $journal_notes ),
 				$entry_id
 			)
