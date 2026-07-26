@@ -5,7 +5,7 @@ Tags: journal, diary, private, notes
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.2
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -60,6 +60,9 @@ Add the `[jejak-journal]` shortcode to any page. Logged-in users can create mont
 Visit [pandaplugin.com](https://pandaplugin.com) for the companion theme, setup guide, and more.
 
 == Changelog ==
+
+= 0.3.0 =
+* Update and fixes for WordPress.org repository.
 
 = 0.2.0 =
 * Maintenance update
