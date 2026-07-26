@@ -35,6 +35,7 @@ function on_activation() {
  * Fires on plugins_loaded.
  */
 function on_plugins_loaded() {
+	load_plugin_textdomain( 'jejak-journal', false, dirname( plugin_basename( JEJAK_JOURNAL_PLUGIN_FILE ) ) . '/languages' );
 	add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\enqueue_front_scripts' );
 	manifest_setup();
 }
