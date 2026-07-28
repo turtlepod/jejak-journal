@@ -66,9 +66,8 @@ function shortcode_render_journal( $atts ) { // phpcs:ignore Generic.CodeAnalysi
 
 	$enabled_features = get_option( 'jejak_journal_features', array( 'highlights', 'todos', 'journal' ) );
 
-	$now           = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
-	$current_year  = (int) gmdate( 'Y', $now );
-	$current_month = (int) gmdate( 'n', $now );
+	$current_year  = (int) gmdate( 'Y' );
+	$current_month = (int) gmdate( 'n' );
 
 	ob_start();
 	require JEJAK_JOURNAL_PLUGIN_DIR . 'templates/journal.php';

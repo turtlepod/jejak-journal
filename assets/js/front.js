@@ -132,13 +132,16 @@
 		var html =
 			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
 			'<div class="jejak-dialog">' +
-				'<p class="jejak-dialog-text">' + (data.i18n.delete_confirm || 'Delete this item?') + '</p>' +
+				'<p class="jejak-dialog-text"></p>' +
 				'<div class="jejak-dialog-actions">' +
-					'<button type="button" class="jejak-btn jejak-btn-outline" data-action="dismiss-overlay">' + (data.i18n.cancel || 'Cancel') + '</button>' +
-					'<button type="button" class="jejak-btn jejak-btn-danger" data-action="confirm-delete">' + (data.i18n.delete || 'Delete') + '</button>' +
+					'<button type="button" class="jejak-btn jejak-btn-outline" data-action="dismiss-overlay"></button>' +
+					'<button type="button" class="jejak-btn jejak-btn-danger" data-action="confirm-delete"></button>' +
 				'</div>' +
 			'</div>';
 		var overlay = createOverlay(html, '[data-action="dismiss-overlay"]');
+		overlay.querySelector('.jejak-dialog-text').textContent = data.i18n.delete_confirm || 'Delete this item?';
+		overlay.querySelector('[data-action="dismiss-overlay"]').textContent = data.i18n.cancel || 'Cancel';
+		overlay.querySelector('[data-action="confirm-delete"]').textContent = data.i18n.delete || 'Delete';
 
 		overlay.addEventListener('click', function (e) {
 			var btn = e.target.closest('button');
@@ -157,12 +160,14 @@
 		var html =
 			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
 			'<div class="jejak-dialog">' +
-				'<p class="jejak-dialog-text">' + message + '</p>' +
+				'<p class="jejak-dialog-text"></p>' +
 				'<div class="jejak-dialog-actions">' +
-					'<button type="button" class="jejak-btn jejak-btn-primary" data-action="dismiss-overlay">' + (data.i18n.ok || 'OK') + '</button>' +
+					'<button type="button" class="jejak-btn jejak-btn-primary" data-action="dismiss-overlay"></button>' +
 				'</div>' +
 			'</div>';
 		var overlay = createOverlay(html, '[data-action="dismiss-overlay"]');
+		overlay.querySelector('.jejak-dialog-text').textContent = message;
+		overlay.querySelector('[data-action="dismiss-overlay"]').textContent = data.i18n.ok || 'OK';
 
 		overlay.addEventListener('click', function (e) {
 			var btn = e.target.closest('button');
