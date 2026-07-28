@@ -100,6 +100,7 @@ function manifest_head_tags() {
 	}
 
 	$sw_url = add_query_arg( 'jejak_sw', '1', home_url( '/' ) );
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — $sw_url is escaped via wp_json_encode(esc_url_raw())
 	printf(
 		"<script>(function(){if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register(%s).catch(function(){});});}})();</script>\n",
 		wp_json_encode( esc_url_raw( $sw_url ) )
