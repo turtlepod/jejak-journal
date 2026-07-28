@@ -87,6 +87,23 @@ class DB {
 	}
 
 	/**
+	 * Get entry by ID (for ownership verification).
+	 *
+	 * @param int $id Entry ID.
+	 * @return array|null
+	 */
+	public static function get_entry_by_id( $id ) {
+		global $wpdb;
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}jejak_journal_entries WHERE id = %d",
+				$id
+			),
+			ARRAY_A
+		);
+	}
+
+	/**
 	 * Get the current updated_at timestamp for an entry.
 	 *
 	 * @param int $id Entry ID.
@@ -145,32 +162,44 @@ class DB {
 	 * @param int         $entry_id   Entry ID.
 	 * @param array       $highlights Array of highlight items.
 	 * @param string|null $updated_at Client's last-known updated_at for lock check.
+	 * @param int|null    $user_id    Owner user ID for defense-in-depth.
 	 * @return int Rows affected (0 = conflict if updated_at was provided).
 	 */
-	public static function update_highlights( $entry_id, $highlights, $updated_at = null ) {
+	public static function update_highlights( $entry_id, $highlights, $updated_at = null, $user_id = null ) {
 		global $wpdb;
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		if ( $updated_at ) {
+			$where = 'id = %d AND updated_at = %s';
+			$args  = array( $entry_id, $updated_at );
+			if ( $user_id ) {
+				$where .= ' AND user_id = %d';
+				$args[] = $user_id;
+			}
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->prefix}jejak_journal_entries SET highlights = %s WHERE id = %d AND updated_at = %s",
+					"UPDATE {$wpdb->prefix}jejak_journal_entries SET highlights = %s WHERE {$where}",
 					wp_json_encode( $highlights ),
-					$entry_id,
-					$updated_at
+					...$args
 				)
 			);
 			return false === $result ? false : (int) $result;
 		}
 
+		$where = 'id = %d';
+		$args  = array( $entry_id );
+		if ( $user_id ) {
+			$where .= ' AND user_id = %d';
+			$args[] = $user_id;
+		}
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->prefix}jejak_journal_entries SET highlights = %s WHERE id = %d",
+				"UPDATE {$wpdb->prefix}jejak_journal_entries SET highlights = %s WHERE {$where}",
 				wp_json_encode( $highlights ),
-				$entry_id
+				...$args
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		return false === $result ? false : (int) $result;
 	}
 
@@ -180,32 +209,44 @@ class DB {
 	 * @param int         $entry_id   Entry ID.
 	 * @param array       $todos      Array of todo items.
 	 * @param string|null $updated_at Client's last-known updated_at for lock check.
+	 * @param int|null    $user_id    Owner user ID for defense-in-depth.
 	 * @return int Rows affected (0 = conflict if updated_at was provided).
 	 */
-	public static function update_todos( $entry_id, $todos, $updated_at = null ) {
+	public static function update_todos( $entry_id, $todos, $updated_at = null, $user_id = null ) {
 		global $wpdb;
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		if ( $updated_at ) {
+			$where = 'id = %d AND updated_at = %s';
+			$args  = array( $entry_id, $updated_at );
+			if ( $user_id ) {
+				$where .= ' AND user_id = %d';
+				$args[] = $user_id;
+			}
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->prefix}jejak_journal_entries SET todos = %s WHERE id = %d AND updated_at = %s",
+					"UPDATE {$wpdb->prefix}jejak_journal_entries SET todos = %s WHERE {$where}",
 					wp_json_encode( $todos ),
-					$entry_id,
-					$updated_at
+					...$args
 				)
 			);
 			return false === $result ? false : (int) $result;
 		}
 
+		$where = 'id = %d';
+		$args  = array( $entry_id );
+		if ( $user_id ) {
+			$where .= ' AND user_id = %d';
+			$args[] = $user_id;
+		}
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->prefix}jejak_journal_entries SET todos = %s WHERE id = %d",
+				"UPDATE {$wpdb->prefix}jejak_journal_entries SET todos = %s WHERE {$where}",
 				wp_json_encode( $todos ),
-				$entry_id
+				...$args
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		return false === $result ? false : (int) $result;
 	}
 
@@ -215,32 +256,44 @@ class DB {
 	 * @param int         $entry_id      Entry ID.
 	 * @param array       $journal_notes Array of journal day entries.
 	 * @param string|null $updated_at    Client's last-known updated_at for lock check.
+	 * @param int|null    $user_id       Owner user ID for defense-in-depth.
 	 * @return int|false Rows affected, or false on SQL error.
 	 */
-	public static function update_journal_notes( $entry_id, $journal_notes, $updated_at = null ) {
+	public static function update_journal_notes( $entry_id, $journal_notes, $updated_at = null, $user_id = null ) {
 		global $wpdb;
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		if ( $updated_at ) {
+			$where = 'id = %d AND updated_at = %s';
+			$args  = array( $entry_id, $updated_at );
+			if ( $user_id ) {
+				$where .= ' AND user_id = %d';
+				$args[] = $user_id;
+			}
 			$result = $wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$wpdb->prefix}jejak_journal_entries SET journal_notes = %s WHERE id = %d AND updated_at = %s",
+					"UPDATE {$wpdb->prefix}jejak_journal_entries SET journal_notes = %s WHERE {$where}",
 					wp_json_encode( $journal_notes ),
-					$entry_id,
-					$updated_at
+					...$args
 				)
 			);
 			return false === $result ? false : (int) $result;
 		}
 
+		$where = 'id = %d';
+		$args  = array( $entry_id );
+		if ( $user_id ) {
+			$where .= ' AND user_id = %d';
+			$args[] = $user_id;
+		}
 		$result = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->prefix}jejak_journal_entries SET journal_notes = %s WHERE id = %d",
+				"UPDATE {$wpdb->prefix}jejak_journal_entries SET journal_notes = %s WHERE {$where}",
 				wp_json_encode( $journal_notes ),
-				$entry_id
+				...$args
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		return false === $result ? false : (int) $result;
 	}
 

@@ -140,6 +140,23 @@ function rest_create_entry( $request ) {
 }
 
 /**
+ * Verify that the current user owns the given entry.
+ *
+ * @param int $entry_id Entry ID.
+ * @return true|\WP_Error True on success, WP_Error on failure.
+ */
+function rest_verify_entry_ownership( $entry_id ) {
+	$entry = DB::get_entry_by_id( $entry_id );
+	if ( ! $entry ) {
+		return new \WP_Error( 'rest_not_found', __( 'Entry not found.', 'jejak-journal' ), array( 'status' => 404 ) );
+	}
+	if ( get_current_user_id() !== (int) $entry['user_id'] ) {
+		return new \WP_Error( 'rest_forbidden', __( 'You do not own this entry.', 'jejak-journal' ), array( 'status' => 403 ) );
+	}
+	return true;
+}
+
+/**
  * PUT /jejak-journal/v1/entry/{id}/highlights
  *
  * @param \WP_REST_Request $request Request.
@@ -147,7 +164,14 @@ function rest_create_entry( $request ) {
  */
 function rest_update_highlights( $request ) {
 	$entry_id = (int) $request['id'];
-	$body     = $request->get_json_params();
+
+	$ownership = rest_verify_entry_ownership( $entry_id );
+	if ( is_wp_error( $ownership ) ) {
+		return $ownership;
+	}
+
+	$body    = $request->get_json_params();
+	$user_id = get_current_user_id();
 
 	if ( ! is_array( $body ) || ! isset( $body['data'] ) ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid highlights data.', 'jejak-journal' ), array( 'status' => 400 ) );
@@ -160,7 +184,7 @@ function rest_update_highlights( $request ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid highlights data.', 'jejak-journal' ), array( 'status' => 400 ) );
 	}
 
-	$affected = DB::update_highlights( $entry_id, $highlights, $updated_at );
+	$affected = DB::update_highlights( $entry_id, $highlights, $updated_at, $user_id );
 
 	if ( false === $affected ) {
 		return new \WP_Error( 'db_error', __( 'Database error.', 'jejak-journal' ), array( 'status' => 500 ) );
@@ -192,7 +216,14 @@ function rest_update_highlights( $request ) {
  */
 function rest_update_todos( $request ) {
 	$entry_id = (int) $request['id'];
-	$body     = $request->get_json_params();
+
+	$ownership = rest_verify_entry_ownership( $entry_id );
+	if ( is_wp_error( $ownership ) ) {
+		return $ownership;
+	}
+
+	$body    = $request->get_json_params();
+	$user_id = get_current_user_id();
 
 	if ( ! is_array( $body ) || ! isset( $body['data'] ) ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid todos data.', 'jejak-journal' ), array( 'status' => 400 ) );
@@ -205,7 +236,7 @@ function rest_update_todos( $request ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid todos data.', 'jejak-journal' ), array( 'status' => 400 ) );
 	}
 
-	$affected = DB::update_todos( $entry_id, $todos, $updated_at );
+	$affected = DB::update_todos( $entry_id, $todos, $updated_at, $user_id );
 
 	if ( false === $affected ) {
 		return new \WP_Error( 'db_error', __( 'Database error.', 'jejak-journal' ), array( 'status' => 500 ) );
@@ -237,7 +268,14 @@ function rest_update_todos( $request ) {
  */
 function rest_update_notes( $request ) {
 	$entry_id = (int) $request['id'];
-	$body     = $request->get_json_params();
+
+	$ownership = rest_verify_entry_ownership( $entry_id );
+	if ( is_wp_error( $ownership ) ) {
+		return $ownership;
+	}
+
+	$body    = $request->get_json_params();
+	$user_id = get_current_user_id();
 
 	if ( ! is_array( $body ) || ! isset( $body['data'] ) ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid notes data.', 'jejak-journal' ), array( 'status' => 400 ) );
@@ -250,7 +288,7 @@ function rest_update_notes( $request ) {
 		return new \WP_Error( 'invalid_data', __( 'Invalid notes data.', 'jejak-journal' ), array( 'status' => 400 ) );
 	}
 
-	$affected = DB::update_journal_notes( $entry_id, $notes, $updated_at );
+	$affected = DB::update_journal_notes( $entry_id, $notes, $updated_at, $user_id );
 
 	if ( false === $affected ) {
 		return new \WP_Error( 'db_error', __( 'Database error.', 'jejak-journal' ), array( 'status' => 500 ) );
