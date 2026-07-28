@@ -53,7 +53,7 @@ function rest_register_routes() {
 		array(
 			'methods'             => 'PUT',
 			'callback'            => __NAMESPACE__ . '\\rest_update_highlights',
-			'permission_callback' => __NAMESPACE__ . '\\rest_permission',
+			'permission_callback' => __NAMESPACE__ . '\\rest_write_permission',
 		)
 	);
 
@@ -63,7 +63,7 @@ function rest_register_routes() {
 		array(
 			'methods'             => 'PUT',
 			'callback'            => __NAMESPACE__ . '\\rest_update_todos',
-			'permission_callback' => __NAMESPACE__ . '\\rest_permission',
+			'permission_callback' => __NAMESPACE__ . '\\rest_write_permission',
 		)
 	);
 
@@ -73,7 +73,7 @@ function rest_register_routes() {
 		array(
 			'methods'             => 'PUT',
 			'callback'            => __NAMESPACE__ . '\\rest_update_notes',
-			'permission_callback' => __NAMESPACE__ . '\\rest_permission',
+			'permission_callback' => __NAMESPACE__ . '\\rest_write_permission',
 		)
 	);
 }
@@ -90,6 +90,36 @@ function rest_permission() {
 	if ( ! DB::user_can_manage() ) {
 		return new \WP_Error( 'rest_no_permission', __( 'You do not have permission.', 'jejak-journal' ), array( 'status' => 403 ) );
 	}
+	return true;
+}
+
+/**
+ * Permission check for write endpoints — includes rate limiting.
+ *
+ * Limits writes to 30 per 60 seconds per user to prevent abuse.
+ *
+ * @return bool|\WP_Error
+ */
+function rest_write_permission() {
+	$base = rest_permission();
+	if ( is_wp_error( $base ) ) {
+		return $base;
+	}
+
+	$user_id = get_current_user_id();
+	$key     = 'jejak_rate_limit_' . $user_id;
+	$count   = (int) get_transient( $key );
+
+	if ( $count >= 30 ) {
+		return new \WP_Error(
+			'rest_rate_limited',
+			__( 'Too many requests. Please slow down.', 'jejak-journal' ),
+			array( 'status' => 429 )
+		);
+	}
+
+	set_transient( $key, $count + 1, 60 );
+
 	return true;
 }
 
