@@ -432,11 +432,20 @@ function admin_page_settings() {
 							});
 						}
 
-						var html = '';
+						resultsEl.textContent = '';
 						results.slice(0, 20).forEach(function (slug) {
-							html += '<button type="button" class="jejak-admin-result-item" data-slug="' + slug + '" style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:24px;cursor:pointer;transition:background 0.2s;">' + fullLib[slug] + '</button>';
+							var btn = document.createElement('button');
+							btn.type = 'button';
+							btn.className = 'jejak-admin-result-item';
+							btn.dataset.slug = slug;
+							btn.style.cssText = 'background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px;font-size:24px;cursor:pointer;transition:background 0.2s;';
+							btn.textContent = fullLib[slug];
+							resultsEl.appendChild(btn);
 						});
-						resultsEl.innerHTML = html || '<p style="grid-column:1/-1;text-align:center;color:#999;">No results</p>';
+						if (!resultsEl.children.length) {
+							resultsEl.textContent = 'No results';
+							resultsEl.style.cssText = 'grid-column:1/-1;text-align:center;color:#999;';
+						}
 					}
 
 					// Click a result → update slot

@@ -448,53 +448,64 @@
 		var selectedKey = triggerBtn.dataset.iconKey || defaultIconKey;
 
 		function buildGrid(filterKey) {
-			var iconKeys = [];
-			var query = filterKey ? filterKey.toLowerCase().replace(/\s+/g, '_') : '';
-
-			if (query) {
-				// Search full library by word match
-				var words = query.split('_').filter(function (w) { return w.length > 0; });
+			var words = (filterKey || '').toLowerCase().split(/\s+/).filter(Boolean);
+			var iconKeys;
+			if (words.length === 0) {
+				// Show default icons when empty query
+				iconKeys = Object.keys(defaultIcons);
+			} else {
+				// Word-match against all icons
+				var queryWords = filterKey.toLowerCase().replace(/\s+/g, '_').split('_').filter(function (w) { return w.length > 0; });
+				iconKeys = [];
 				Object.keys(allIcons).forEach(function (key) {
-					if (words.every(function (w) { return key.indexOf(w) !== -1; })) {
+					if (queryWords.every(function (w) { return key.indexOf(w) !== -1; })) {
 						iconKeys.push(key);
 					}
 				});
-			} else {
-				// Default: the 20 predefined icons
-				iconKeys = Object.keys(defaultIcons);
 			}
 
-			// Include selected icon, dropping last to stay at 20
-			var hasSelected = iconKeys.indexOf(selectedKey) !== -1;
-			if (!hasSelected) {
+			// Ensure selected icon is always present
+			if (selectedKey && iconKeys.indexOf(selectedKey) === -1) {
 				iconKeys = iconKeys.slice(0, 19);
 				iconKeys.unshift(selectedKey);
 			} else {
 				iconKeys = iconKeys.slice(0, 20);
 			}
 
-			var html = '';
+			var grid = document.createElement('div');
+			grid.className = 'jejak-icon-grid';
 			iconKeys.forEach(function (key) {
 				var isSelected = key === selectedKey;
-				html += '<button type="button" class="jejak-icon-option' + (isSelected ? ' jejak-icon-option--selected' : '') + '" data-icon-key="' + key + '">' +
-					(allIcons[key] || defaultIcons[key] || '⭐') + '</button>';
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'jejak-icon-option' + (isSelected ? ' jejak-icon-option--selected' : '');
+				btn.dataset.iconKey = key;
+				btn.textContent = allIcons[key] || defaultIcons[key] || '⭐';
+				grid.appendChild(btn);
 			});
-			return html;
+			return grid;
 		}
 
-		var iconHtml = buildGrid('');
+		var iconGridEl = buildGrid('');
 
 		var html =
 			'<div class="jejak-overlay-backdrop" data-action="dismiss-overlay"></div>' +
 			'<div class="jejak-dialog jejak-icon-picker-dialog">' +
-				'<h3>' + (data.i18n.select_icon || 'Select icon') + '</h3>' +
-				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="' + (data.i18n.search_icon || 'Search icons…') + '">' +
-				'<div class="jejak-icon-grid">' + iconHtml + '</div>' +
+				'<h3></h3>' +
+				'<input type="text" class="jejak-icon-search" id="jejak-icon-search" placeholder="">' +
+				'<div class="jejak-icon-grid-wrap"></div>' +
 				'<button type="button" class="jejak-btn jejak-modal-close" data-action="dismiss-overlay">\u00D7</button>' +
 			'</div>';
 		var overlay = createOverlay(html);
+		overlay.querySelector('h3').textContent = data.i18n.select_icon || 'Select icon';
+		var searchInput = overlay.querySelector('#jejak-icon-search');
+		if (searchInput) {
+			searchInput.placeholder = data.i18n.search_icon || 'Search icons…';
+		}
+		var gridWrap = overlay.querySelector('.jejak-icon-grid-wrap');
+		gridWrap.appendChild(iconGridEl);
 
-		overlay.querySelector('.jejak-icon-grid').addEventListener('click', function (e) {
+		iconGridEl.addEventListener('click', function (e) {
 			var iconBtn = e.target.closest('.jejak-icon-option');
 			if (!iconBtn) return;
 			var key = iconBtn.dataset.iconKey;
@@ -512,10 +523,11 @@
 		});
 
 		var searchEl = overlay.querySelector('#jejak-icon-search');
-		var iconGrid = overlay.querySelector('.jejak-icon-grid');
 		if (searchEl) {
 			searchEl.addEventListener('input', function () {
-				iconGrid.innerHTML = buildGrid(this.value);
+				var newGrid = buildGrid(this.value);
+				iconGridEl.replaceWith(newGrid);
+				iconGridEl = newGrid;
 			});
 		}
 	}
