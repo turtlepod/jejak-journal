@@ -525,7 +525,8 @@ function handle_import() {
 		wp_die( esc_html__( 'File upload failed.', 'jejak-journal' ) );
 	}
 
-	$tmp_name = isset( $_FILES['jejak_import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['jejak_import_file']['tmp_name'] ) ) : '';
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- tmp_name is server-assigned by PHP's file upload handler, not user input
+	$tmp_name = isset( $_FILES['jejak_import_file']['tmp_name'] ) ? wp_unslash( $_FILES['jejak_import_file']['tmp_name'] ) : '';
 	if ( ! $tmp_name || ! file_exists( $tmp_name ) ) {
 		wp_die( esc_html__( 'File upload failed.', 'jejak-journal' ) );
 	}
