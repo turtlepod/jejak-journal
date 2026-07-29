@@ -44,12 +44,9 @@
 	var realCurrentYear  = parseInt(data.current_year, 10) || new Date().getFullYear();
 	var realCurrentMonth = parseInt(data.current_month, 10) || (new Date().getMonth() + 1);
 
-	var monthNames = [
-		'January', 'February', 'March', 'April', 'May', 'June',
-		'July', 'August', 'September', 'October', 'November', 'December'
-	];
+	var monthNames = data.i18n.months || [];
 
-	// ── Feature Helpers ─────────────────────────────
+// ── Feature Helpers ─────────────────────────────
 	function hasFeature(name) {
 		return features.indexOf(name) !== -1;
 	}
@@ -657,7 +654,11 @@
 			});
 
 			if (toImport.length === 0) {
-				showNotice('No unchecked items to import from ' + monthNames[prevMonth - 1] + ' ' + prevYear + '.');
+				showNotice(
+					data.i18n.import_none
+						.replace('%1$s', monthNames[prevMonth - 1])
+						.replace('%2$d', prevYear)
+				);
 				return;
 			}
 
@@ -699,10 +700,10 @@
 					loadEntry(currentYear, currentMonth);
 					return;
 				}
-				showNotice('Failed to import todos.');
+				showNotice(data.i18n.import_failed || 'Failed to import todos.');
 			});
 		}).catch(function () {
-			showNotice('No previous month entry found.');
+			showNotice(data.i18n.no_prev_entry || 'No previous month entry found.');
 		});
 	}
 
