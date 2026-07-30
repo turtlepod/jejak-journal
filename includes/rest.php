@@ -106,10 +106,7 @@ function rest_get_entry( $request ) {
 
 	$entry = DB::get_entry( $user_id, $year, $month );
 	if ( ! $entry ) {
-		$entry = DB::create_entry( $user_id, $year, $month );
-		if ( ! $entry ) {
-			return new \WP_Error( 'create_failed', __( 'Could not create entry.', 'jejak-journal' ), array( 'status' => 500 ) );
-		}
+		return new \WP_Error( 'not_found', __( 'No entry for this month.', 'jejak-journal' ), array( 'status' => 404 ) );
 	}
 
 	return rest_ensure_response( $entry );
