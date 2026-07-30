@@ -276,6 +276,10 @@ class DB {
 	 * @return array
 	 */
 	public static function get_allowed_roles() {
+		static $roles = null;
+		if ( null !== $roles ) {
+			return $roles;
+		}
 		$roles = get_option( 'jejak_journal_roles', array( 'administrator' ) );
 		if ( ! is_array( $roles ) ) {
 			$roles = array( 'administrator' );
