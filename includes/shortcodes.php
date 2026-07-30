@@ -39,7 +39,7 @@ function shortcode_render_journal( $atts ) { // phpcs:ignore Generic.CodeAnalysi
 		$login_url = wp_login_url( $login_redirect_url );
 
 		// Use the theme login-prompt partial if the companion theme is active.
-		$partial = get_template_directory() . '/templates/partials/login-prompt.php';
+		$partial = get_theme_file_path( 'templates/partials/login-prompt.php' );
 		if ( function_exists( 'JejakTheme\\get_account_page_url' ) && file_exists( $partial ) ) {
 			$heading = __( 'Jejak Journal', 'jejak-journal' );
 			$desc    = __( 'Please log in to access your journal.', 'jejak-journal' );
