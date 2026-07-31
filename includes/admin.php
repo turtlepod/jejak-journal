@@ -181,9 +181,12 @@ function admin_page_settings() {
 		return;
 	}
 
-	// Show import success notice.
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	$imported = isset( $_GET['jejak_imported'] ) ? absint( $_GET['jejak_imported'] ) : 0;
+	// Show import success notice with nonce verification.
+	$imported = 0;
+	$nonce    = isset( $_GET['_jejak_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_jejak_nonce'] ) ) : '';
+	if ( $nonce && wp_verify_nonce( $nonce, 'jejak_import_notice' ) ) {
+		$imported = isset( $_GET['jejak_imported'] ) ? absint( wp_unslash( $_GET['jejak_imported'] ) ) : 0;
+	}
 	if ( $imported > 0 ) {
 		echo '<div class="notice notice-success is-dismissible"><p>';
 		printf(
@@ -561,6 +564,7 @@ function handle_import() {
 			array(
 				'page'           => ADMIN_SLUG,
 				'jejak_imported' => $imported,
+				'_jejak_nonce'   => wp_create_nonce( 'jejak_import_notice' ),
 			),
 			admin_url( 'admin.php' )
 		)
